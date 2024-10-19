@@ -1,7 +1,6 @@
 
 
 type integers = 
-|Unbound
 |MInt of int;;
 
 type variable = string;;
@@ -32,10 +31,12 @@ type program =
 |Program of variable * variable * command;;
 
 type 't env = variable -> 't;;
-let emptyenv = function x -> Unbound;;
+
+let emptyenv = function _ -> failwith "Error: Variable is not defined";;
 let bind (s: integers env) (x: variable) (v: integers) = 
-  function (i: variable) -> if (i = x) then v else (s i)
-let my_program = Program("in","out",
+  function (i: variable) -> if (i = x) then v else (s i);;
+
+(*let my_program = Program("in","out",
 CommandSeq(
   Assign("x", Variable("in")),
   CommandSeq(
@@ -54,12 +55,19 @@ CommandSeq(
     )
   )
 )
-);;
+);;*)
+let deadlock_program = Program(
+  "a",
+  "b",
+  CommandSeq(
+    Assign("x",Constants(MInt(1))),
+    Assign("b", Plus(Variable("a"),Plus(Variable("x"), Variable("y"))))
+  )
+)
 
   
 let rec op_eval env op =
   let eval_integers = function
-  | Unbound -> 0
   | MInt(value) -> value in
   match op with
   |Constants(value) -> eval_integers value
@@ -89,7 +97,6 @@ let rec eval program input_value =
   | MInt(_) -> (command_eval (bind emptyenv input input_value) command) output
   | _ -> failwith "Not a valid program");;
 
-let res = match (eval my_program (MInt(2))) with
- |MInt(value) -> value
- |Unbound -> -1;;
+let res = match (eval deadlock_program (MInt(2))) with
+ |MInt(value) -> value;;
 Printf.sprintf "%d" (res);;

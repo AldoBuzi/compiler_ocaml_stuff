@@ -1,4 +1,5 @@
 (executable
  (public_name ocaml_compiler)
- (name main)
- (libraries ocaml_compiler))
+ (name minifun)
+ (libraries ocaml_compiler base stdio)
+ (preprocess (pps ppx_deriving.show ppx_deriving.ord)))
