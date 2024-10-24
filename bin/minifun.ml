@@ -97,7 +97,6 @@ let recursive_function = LetFunIn(
   ), 
   Variable("f")
 );;
-print_endline (show_evt (eval emptyenv recursive_function));;
 
 let apply_not_ending_recursive_function = LetFunIn(
   "g",
@@ -138,6 +137,5 @@ let static_program = LetIn(
   )
 );;
 
-(* if you run this program, then it will never end*)
-let res = eval emptyenv (apply_not_ending_recursive_function);;
-print_endline (show_evt res);;
+
+print_endline (show_evt (eval emptyenv static_program));;
