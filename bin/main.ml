@@ -1,20 +1,6 @@
 let () = print_endline "Hello, World!"
 
-  (* List of state, list of valid char input, all transitions, inital state, final state list *)
-(*Alternative*)
-(*
-type state = 
-  |State
-and 
-'letter sets = 
-|Initial of state
-|Final of state list
-|Transition of 'letter * state * state
-|Input of 'letter
-and 
-'letter automaton =
-  |Automa of state list * 'letter sets list * 'letter sets list * 'letter sets * 'letter sets list   ;;
-*)
+(* Test *)
 
 
 type state = 
