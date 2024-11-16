@@ -1,4 +1,3 @@
-
 type variable = string [@@deriving show];;
 
 type term =
@@ -61,7 +60,7 @@ let rec eval env program =
     | (EInt(val1), EInt(val2)) -> val1 < val2
     | _ -> failwith "Term provided is not a boolean")
   | Greater(op1,op2) -> EBool( match ((eval env op1), (eval env op2)) with
-    | (EInt(val1), EInt(val2)) -> val1 < val2
+    | (EInt(val1), EInt(val2)) -> val1 > val2
     | _ -> failwith "Term provided is not a boolean")
   | Minus(op1,op2) -> EInt( match ((eval env op1), (eval env op2)) with
     | (EInt(val1), EInt(val2)) -> val1-val2
@@ -142,4 +141,4 @@ let static_program = LetIn(
 );;
 
 
-print_endline (show_evt (eval emptyenv static_program));;
+print_endline (show_evt (eval emptyenv recursive_function));;

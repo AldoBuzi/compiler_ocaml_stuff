@@ -1,6 +1,6 @@
 (lang dune 3.15)
 
-(name ocaml_compiler)
+(name MiniLang)
 
 (generate_opam_files true)
 
@@ -15,11 +15,13 @@
 
 (documentation https://url/to/documentation)
 
+(using menhir 3.0)
+
 (package
- (name ocaml_compiler)
+ (name MiniLang)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends ocaml dune ocamllex menhir)
  (tags
   (topics "to describe" your project)))
 

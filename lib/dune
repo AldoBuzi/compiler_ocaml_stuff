@@ -1,2 +1,8 @@
+(menhir
+ (explain true)
+ (modules MiniFunParser MiniImpParser))
+(ocamllex MiniFunLexer MiniImpLexer)
 (library
- (name ocaml_compiler))
+ (name MiniLang)
+ (preprocess(pps ppx_deriving.show))
+ (modules MiniFunLexer MiniFunParser MiniFun MiniImp MiniImpParser MiniImpLexer))

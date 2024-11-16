@@ -1,2 +1,2 @@
 (test
- (name test_ocaml_compiler))
+ (name test_mini_lang))
