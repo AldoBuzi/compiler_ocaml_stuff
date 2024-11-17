@@ -1,5 +1,13 @@
 def main with input in x output out as 
-    if x < 0 
-        then x := x - 50;
+    out := 0;
+    if x < 10 
+        then 
+            x := 10;
+            x := x + 50;
         else (x := x - 10; out := x - 100) ; 
-    out := x - 100;
+    while x < 100 do (
+        out := out + x;
+        x := x + 1
+    );
+    out := (x + 10) * 10;
+    out := x - 1;

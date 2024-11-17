@@ -14,9 +14,7 @@ let () =
   let program = (try MiniLang.MiniImpParser.prg MiniLang.MiniImpLexer.read lexbuf 
 with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_string lexbuf.lex_curr_p)))
   ) in
-    let x = (match MiniLang.MiniImp.eval program (MInt 5) with
-    MInt(value) ->  value) in
-    print_endline ( Printf.sprintf "%d" (x));
+    print_endline ( Printf.sprintf "%d" (eval program 5));
     print_newline()
 (*let deadlock_program = MiniLang.MiniImp.Program(
   "a",

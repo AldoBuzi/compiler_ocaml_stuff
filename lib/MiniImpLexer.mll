@@ -19,11 +19,15 @@ rule read = parse
 | ":=" {ASSIGN}
 | "true" {T_BOOL}
 | "false" {F_BOOL}
+| "while" {WHILE}
+| "do" {DO}
 | "if" {IF}
 | "then" {THEN}
 | "else" {ELSE}
 | "<" {SMALLER}
 | "-" {MINUS}
+| "+" {PLUS}
+| "*" {TIMES}
 | "(" {L_PAR}
 | ")" {R_PAR}
 | "skip" {SKIP}

@@ -29,7 +29,7 @@ def:
     |DEF_MAIN_WITH_IN; t1 = VARIABLE; OUTPUT; t2 = VARIABLE; AS; body = cmd {Program(t1,t2,body)}
 cmd:
     |t1=cmd; SEMICOLON; t2=expr {CommandSeq(t1,t2)}
-    |t1=cmd; SEMICOLON {CommandSeq(t1,Skip)}
+    |t1=cmd; SEMICOLON {t1}
     |t1=expr {t1}
 expr:
     |t1=VARIABLE; ASSIGN; t2=ops {Assign(t1,t2)}
@@ -46,8 +46,10 @@ boolean:
 
 ops:
     |t1=VARIABLE {Variable t1}
-    |t1=CONSTANT {Constants (MInt t1)}
+    |t1=CONSTANT {Constant (t1)}
     |t1=ops; PLUS; t2=ops; {Plus (t1, t2)}
     |t1=ops; MINUS; t2=ops; {Minus (t1, t2)}
     |t1=ops; TIMES; t2=ops; {Times (t1, t2)}
+    |L_PAR; t1=ops; R_PAR {t1}
+
 
