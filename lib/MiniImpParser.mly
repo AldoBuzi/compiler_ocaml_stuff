@@ -27,13 +27,16 @@ prg:
     |t = def; EOF {t}
 def:
     |DEF_MAIN_WITH_IN; t1 = VARIABLE; OUTPUT; t2 = VARIABLE; AS; body = cmd {Program(t1,t2,body)}
+(* left associativity for sequences of commands *)
 cmd:
     |t1=cmd; SEMICOLON; t2=expr {CommandSeq(t1,t2)}
+    (* semicolon on last instruction is optional *)
     |t1=cmd; SEMICOLON {t1}
     |t1=expr {t1}
 expr:
     |t1=VARIABLE; ASSIGN; t2=ops {Assign(t1,t2)}
     |WHILE; t1 = boolean; DO; t2 = expr {WhileDo(t1,t2)}
+    (* notice that we can write sequences of commands without using parenthesis within the if_true body, the else_body requires parenthesis for sequences *)
     |IF; t1=boolean; THEN t2=cmd; ELSE; t3=expr {IfThenElse(t1,t2,t3)}
     |L_PAR; t1=cmd; R_PAR {t1}
     |SKIP {Skip}

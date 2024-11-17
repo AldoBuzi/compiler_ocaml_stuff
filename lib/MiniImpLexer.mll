@@ -12,7 +12,7 @@ let integer = '-'?['0'-'9']['0'-'9']*
 
 (* lexing rules *)
 rule read = parse
-| "def main with input in" {DEF_MAIN_WITH_IN}
+| "def main with input" {DEF_MAIN_WITH_IN}
 | ";" {SEMICOLON}
 | "output" {OUTPUT}
 | "as" {AS}

@@ -26,6 +26,7 @@ rule read = parse
 | integer {INT(int_of_string (Lexing.lexeme lexbuf))}
 | variable {VARIABLE(Lexing.lexeme lexbuf)}
 | "=" {EQUAL}
+| "->" {ARROW}
 | "(" {L_PAR}
 | ")" {R_PAR}
 | "+" {PLUS}

@@ -10,7 +10,7 @@
 %token PLUS MINUS TIMES NOT AND IF THEN ELSE SMALLER GREATER EOF
 %token LET IN REC
 %token FUN
-%token EQUAL L_PAR R_PAR
+%token EQUAL L_PAR R_PAR ARROW
 
 (* start nonterminal *)
 %start <term> prg
@@ -31,12 +31,13 @@ expr5:
     | LET; REC; t1=VARIABLE; t2=VARIABLE; EQUAL; t3 = expr3; IN; t4=expr5 {LetFunIn(t1,t2,t3,t4)}
     | t = expr3 {t}
 expr3:
-    | FUN; t1=VARIABLE; EQUAL; t2 = expr3; {Fun(t1,t2)}
+    | FUN; t1=VARIABLE; ARROW; t2 = expr3; {Fun(t1,t2)}
     | IF; t1 = expr3; THEN; t2 = expr3; ELSE; t3 = expr3 {IfThenElse(t1,t2,t3)}
     | t1 = expr1 {t1}
 
 expr1:
     | NOT; t1 = expr1 {Not t1}
+    (* right associative like ocaml, test not false || false && false -> ocaml returns true  *)
     | t1 = factor; AND; t2 = expr1 { And (t1, t2)}
     | t1 = expr {t1}
 expr:
@@ -46,6 +47,7 @@ expr:
     | t1 = expr; SMALLER; t2 = expr  {Smaller (t1, t2)}
     | t1 = expr; GREATER; t2 = expr  {Greater (t1, t2)}
     | t = expr2 {t}
+(* apply is left associative, this means that f g z y is applied like ((f g) z) y *)
 expr2:
     | t1=expr2; t2 = factor { Apply(t1,t2)}
     | t1 = factor {t1}
