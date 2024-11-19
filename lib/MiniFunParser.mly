@@ -22,7 +22,23 @@
 
 %%
 
+prg: 
+    | t = trm; EOF               {t}
+
+trm:
+    |LET; t1=VARIABLE; EQUAL; t2 = trm; IN; t3=trm {LetIn(t1,t2,t3)}
+    |LET; REC; t1=VARIABLE; t2=VARIABLE; EQUAL; t3 = trm; IN; t4=trm {LetFunIn(t1,t2,t3,t4)}
+    |FUN; t1=VARIABLE; ARROW; t2 = trm; {Fun(t1,t2)}
+    | IF; t1 = trm; THEN; t2 = trm; ELSE; t3 = trm {IfThenElse(t1,t2,t3)}
+    | NOT; t1 = trm {Not t1}
+    | t1 = trm; AND; t2 = trm { And (t1, t2)}
+    | i = INT                    {Int i}
+    | i = VARIABLE               {Variable i}
+    | i = BOOL {Bool i}
+    | L_PAR t = trm R_PAR {t}
+
 (* grammar *)
+(*
 prg: 
     | t = expr5; EOF               {t}
 
@@ -31,6 +47,8 @@ expr5:
     | LET; REC; t1=VARIABLE; t2=VARIABLE; EQUAL; t3 = expr3; IN; t4=expr5 {LetFunIn(t1,t2,t3,t4)}
     | t = expr3 {t}
 expr3:
+    (* fun x -> x 1 is right associative, so it returns an high order function *)
+    (* fun x -> fun y -> y 1 is equal to (fun x -> (fun y -> (y 1))) *)
     | FUN; t1=VARIABLE; ARROW; t2 = expr3; {Fun(t1,t2)}
     | IF; t1 = expr3; THEN; t2 = expr3; ELSE; t3 = expr3 {IfThenElse(t1,t2,t3)}
     | t1 = expr1 {t1}
@@ -56,3 +74,4 @@ factor:
     | i = VARIABLE               {Variable i}
     | i = BOOL {Bool i}
     | L_PAR t = expr5 R_PAR {t}
+*)

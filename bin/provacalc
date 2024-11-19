@@ -1,1 +1,2 @@
-not false or false and false
+let z = (fun x -> (fun y -> (y 1))) 5 <new_fn> in
+z 2 (fun gg -> gg) 
