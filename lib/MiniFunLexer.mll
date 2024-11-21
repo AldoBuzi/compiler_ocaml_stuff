@@ -5,7 +5,7 @@ exception LexingError of string
 }
 
 (* some named RExp *)
-let integer = '-'?['0'-'9']['0'-'9']*
+let integer = ['0'-'9']['0'-'9']*
 let white = [' ' '\t']+ | '\r' | '\n' | "\r\n"
 let variable = ['a'-'z'](['a'-'z'] | ['0'-'9'])*
 

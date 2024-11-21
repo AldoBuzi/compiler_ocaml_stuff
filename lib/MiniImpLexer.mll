@@ -7,7 +7,7 @@ exception LexingError of string
 (* named regex *)
 let white = [' ' '\t']+ | '\r' | '\n' | "\r\n"
 let variable = ['a'-'z'](['a'-'z'] | ['0'-'9'])*
-let integer = '-'?['0'-'9']['0'-'9']*
+let integer = ['0'-'9']['0'-'9']*
 
 
 (* lexing rules *)

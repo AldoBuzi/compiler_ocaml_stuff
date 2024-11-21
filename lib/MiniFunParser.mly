@@ -21,7 +21,7 @@
 %left TIMES       /* highest precedence */
 
 %%
-
+(*
 prg: 
     | t = trm; EOF               {t}
 
@@ -35,10 +35,10 @@ trm:
     | i = INT                    {Int i}
     | i = VARIABLE               {Variable i}
     | i = BOOL {Bool i}
-    | L_PAR t = trm R_PAR {t}
+    | L_PAR t = trm R_PAR {t}*)
 
 (* grammar *)
-(*
+
 prg: 
     | t = expr5; EOF               {t}
 
@@ -70,8 +70,10 @@ expr2:
     | t1=expr2; t2 = factor { Apply(t1,t2)}
     | t1 = factor {t1}
 factor: 
-    | i = INT                    {Int i}
+    | t = int {t}
     | i = VARIABLE               {Variable i}
     | i = BOOL {Bool i}
     | L_PAR t = expr5 R_PAR {t}
-*)
+int:
+    | t = INT {Int t}
+    |  L_PAR; MINUS; t = INT; R_PAR {Int (-t)}

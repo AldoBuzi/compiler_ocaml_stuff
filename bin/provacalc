@@ -1,2 +1,3 @@
-let z = (fun x -> (fun y -> (y 1))) 5 <new_fn> in
-z 2 (fun gg -> gg) 
+let f = fun x -> x in
+let g = fun z -> z in
+f (- 2) - g (-3)

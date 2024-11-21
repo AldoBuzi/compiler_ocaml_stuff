@@ -16,9 +16,9 @@ let () =
   let program = (try MiniLang.MiniImpParser.prg MiniLang.MiniImpLexer.read lexbuf 
 with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_string lexbuf.lex_curr_p)))
   ) in
-    let (_,edges) = (match program with
+    let (nodes,edges) = (match program with
     | Program(_,_,c) -> build_cfg c) in
-    print_endline (hr_graph edges);
+    hr_graph nodes edges; print_endline "--------"; 
     print_endline ( Printf.sprintf "%d" (eval program (int_of_string input_v)));
     print_newline()
 

@@ -1,83 +1,38 @@
 open MiniImp
 
-
-type variable = string [@@deriving show];;
-
-type a = 
-  |Variable of variable
-  |Int of int
-  |Plus of a * a
-  |Minus of a * a
-  |Times of a * a [@@deriving show];;
-
-type b = 
-|True
-|False
-|And of b * b
-|Not of b
-|Smaller of a * a [@@deriving show];;
 type statement = 
 |Skip
-|Assign of variable * a
-|Condition of b [@@deriving show];;
+|Assign of variable * ops
+|Guard of boolean [@@deriving show];;
 
-type node = statement list  [@@deriving show];;
-type edge = node * node  [@@deriving show];;
-type graph = node list * edge list  [@@deriving show];;
-let rec next node edge_list =
-  match edge_list with
-  | [] -> None
-  | (_node1, _node2) :: edge_list' -> if _node1 = node then Some _node2 else next node edge_list';;
+type node =  statement list  [@@deriving show];;
+type edge = (int,int list) Hashtbl.t;;
+type graph = (int, node) Hashtbl.t *  edge;;
 
-
-(* Map MiniImp types to statement, a and b *)
-let translate ast = 
-  let rec translate_a ast = 
-    match ast with
-    | MiniImp.Variable(i) -> Variable(i)
-    | Constant(i) -> Int( i)
-    | Plus(t1,t2) -> Plus(translate_a t1, translate_a t2)
-    | Times(t1,t2) -> Times(translate_a t1, translate_a t2)
-    | Minus(t1,t2) -> Minus(translate_a t1, translate_a t2) in
-  let rec translate_b ast = 
-      match ast with
-      | MiniImp.True -> True
-      | False -> False
-      | And(t1,t2) -> And(translate_b t1, translate_b t2)
-      | Not(t1) -> Not(translate_b t1)
-      | Smaller(t1,t2) -> Smaller(translate_a t1, translate_a t2) in
-  match ast with
-  | MiniImp.Assign(t1,t2) -> Assign(t1, translate_a t2)
-  | Skip -> Skip
-  | IfThenElse(cond, _, _) -> Condition(translate_b cond)
-  | WhileDo(cond, _) -> Condition(translate_b cond)
-  | CommandSeq(_,_) -> failwith "This case must not be matched";;
+let nodes = Hashtbl.create 256;;
+let edges = Hashtbl.create 256;;
 
 
-let merge_edges edges edges2 merged = 
-  match (List.rev  edges, edges2) with
-  (* Example : C1;Skip *)
-  | ((start,_)::edges', []) -> (List.rev edges') @ [(start, merged)]
-  (* Example : Skip;IfThenElse*)
-  | ([], ([Condition(_)],end')::([Condition(_)],end'')::edges2') -> 
-    (merged,   end') :: (merged, end'') :: edges2'
-  (* Example : Skip;C2 *)
-  | ([], (_,end')::edges2') -> (merged, end') :: edges2'
-  (* Example : C1;IfThenElse*)
-  | ((start,_)::edges', ([Condition(_)],end')::([Condition(_)],end'')::edges2') -> 
-    (List.rev edges') @ ((start, merged) :: (merged,   end') :: (merged, end'') :: edges2')
-  (* Example : C1;C2 *)
-  | ((start,_)::edges', (_,end')::edges2') -> 
-    (List.rev edges') @ (start, merged) :: (merged, end') :: edges2'
-  (* Example : Skip;Skip *)
-  | ([],[]) -> [];;
+let last_id = ref 0 ;;
+let push_node id node = 
+  id := !id + 1;
+  Hashtbl.add nodes !id node;
+  nodes;;
+type integers_list = integers list [@@deriving show];;
+let push_edge id edge = 
+  Hashtbl.replace edges id edge;
+  edges;;
 
+let find table id = 
+  try Hashtbl.find table id
+  with
+  |_ -> failwith (Printf.sprintf "ID: %d not found" id);;
 
 (* Utility to get human readable representation of cfg, thus making debugging easier *) 
-let rec hr_graph edges = 
+let hr_graph nodes edges = 
   let rec get_string_a = function
    |Variable(i) -> i
-   |Int(i) -> string_of_int(i)
+   |Constant(i) -> string_of_int(i)
    |Plus(t1,t2) -> Printf.sprintf "%s + %s" (get_string_a t1) (get_string_a t2)
    |Times(t1,t2) -> Printf.sprintf "%s * %s" (get_string_a t1) (get_string_a t2)
    |Minus(t1,t2) -> Printf.sprintf "%s - %s" (get_string_a t1) (get_string_a t2) in
@@ -92,38 +47,63 @@ let rec hr_graph edges =
     | [] -> ""
     | Skip::remaining' -> Printf.sprintf "Skip; %s" (get_node_representation remaining')
     | Assign(t,a)::remaining' -> Printf.sprintf "%s := %s; %s" t (get_string_a a) (get_node_representation remaining')
-    | Condition(cond)::remaining' -> Printf.sprintf  "%s?; %s" (get_string_b cond) (get_node_representation remaining') in
-  match edges with
-  |[] -> ""
-  |(start,_end)::edges' -> Printf.sprintf "[%s]  ->   [%s] \n\n%s" (get_node_representation start) (get_node_representation _end) (hr_graph edges');;
+    | Guard(cond)::remaining' -> Printf.sprintf  "%s?; %s" (get_string_b cond) (get_node_representation remaining') in
+  Hashtbl.iter (fun x y -> Printf.printf "ID= %d: [%s]  ->  %s\n" x (get_node_representation y) (try show_integers_list (Hashtbl.find edges x) with |_ -> "[]")) nodes; print_endline "--------";
+  print_endline "----------------------------------- \n EDGES:";
+  Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  %s\n" x (show_integers_list y)) edges; print_endline "--------";
   ;;
-
+  
 (* order of nodes and edges is important when building the cfg, once it's built, it doesn't matter anymore *)
-let rec build_cfg ast_program =
-    match ast_program with
-    | MiniImp.Skip -> ([[Skip]],[])
-    | Assign(_,_) -> ([[translate ast_program]],[])
-    | CommandSeq(c1,c2) -> (
-      match (build_cfg c1, build_cfg c2) with 
-        |((block1, edges),(block2, edges2)) -> 
-            let last_b1 = List.rev block1 in 
-            let merged = List.hd last_b1 @ List.hd block2 in
-            ( List.rev(List.tl last_b1 ) @ merged :: List.tl block2, merge_edges edges edges2 merged)
-      )
-    | IfThenElse(_, if_true, if_false) -> 
-      let node = [translate ast_program] in 
-        (match (build_cfg if_true, build_cfg if_false) with
-        | ((block1, edges),(block2, edges2)) -> 
-          (
-            node::block1@block2@[[Skip]], 
-            (node, List.hd block1 ) :: (node, List.hd block2 ) :: (List.hd (List.rev block1), [Skip] ) :: edges @ edges2 @ [(List.hd (List.rev block2), [Skip])]
-          )
-        )
-    | WhileDo(_, body) -> (match build_cfg body with
-     | (block1, edges) -> let node = [translate ast_program] in
-        (
-          [Skip]::node:: block1@[[Skip]], 
-          ([Skip], node)::(node,List.hd block1)::(List.hd (List.rev block1),node)::(node,[Skip])::edges
-        )
-    );;
+let build_cfg ast_program =
+  let rec build ast_program = 
+  (match ast_program with
+  | MiniImp.Skip ->  ignore (push_node last_id [Skip]); ignore (push_edge !last_id []); !last_id
+  | Assign(t1,t2) -> ignore (push_node last_id [Assign(t1,t2)]); ignore (push_edge !last_id []); !last_id
+  | CommandSeq(c1,c2) -> 
+    let first_id = build c1 in
+    let c1_last_id = !last_id in
+    let first_id2 = build c2 in
+    let node1 = find nodes (c1_last_id) in
+    let node2 = find nodes (first_id2) in
+    (* Remove unnecessary skips *)
+    let merged = match (List.rev node1,node2) with
+    | (Skip::node1', _) -> List.rev node1' @ node2
+    | (_, Skip::node2') ->node1@node2'
+    | _ -> node1 @ node2
+    in
+    let _ = Hashtbl.replace nodes c1_last_id merged in
+    let _ = Hashtbl.remove nodes (first_id2) in
+    let out_edges = find edges (first_id2) in
+    let _ = push_edge c1_last_id out_edges in
+    let _ = Hashtbl.remove edges first_id2 in
+    first_id
+  | IfThenElse(cond, if_true, if_false) -> 
+    let _ = push_node last_id [Guard cond] in
+    let guard_id = !last_id in
+    let true_body = build if_true in
+    let false_body = build if_false in
+    let _ = push_edge guard_id [true_body; false_body] in
+    let _ = push_node last_id [Skip] in
+    let _ = push_edge true_body [!last_id] in
+    let _ = push_edge false_body [!last_id] in
+    guard_id
+  | WhileDo(cond, body) -> 
+    ignore (push_node last_id [Skip]);
+    let root_id = !last_id in
+    let _ = push_node last_id [Guard(cond)] in
+    let _ = push_edge (!last_id-1) [!last_id] in
+    let guard_id = !last_id in
+    let body_id = build body in
+    let _ = push_edge (!last_id) [guard_id] in
+    let _ = push_node last_id [Skip] in
+    let _ = push_edge (guard_id) [body_id;!last_id] in
+    root_id
+    ) in
+  ignore (build ast_program);
+  (nodes, edges)
+;;
+
+
+
+
 
