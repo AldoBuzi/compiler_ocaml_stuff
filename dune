@@ -2,4 +2,4 @@
   (menhir
   (flags explain))
   (dev
-    (flags (:standard -w -37 -w -32))))
+    (flags (:standard -w -37 -w -32 -w -26))))

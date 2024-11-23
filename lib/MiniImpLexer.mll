@@ -31,6 +31,7 @@ rule read = parse
 | "(" {L_PAR}
 | ")" {R_PAR}
 | "skip" {SKIP}
+| "and" {AND}
 | white {read lexbuf}
 | variable {VARIABLE(Lexing.lexeme lexbuf)}
 | integer {CONSTANT(int_of_string (Lexing.lexeme lexbuf))}
