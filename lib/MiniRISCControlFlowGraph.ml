@@ -66,7 +66,7 @@ let rec translate_node node =
     | Variable(t1) -> 
       let t1_reg = get_reg_from_variable t1 in 
       let res = if peek_write_reg() = "" then get_next_register() else write_to_reg() in
-      [Load(t1_reg, res)]
+      [Copy(t1_reg, res)]
     | Plus(t1,t2) | Minus(t1,t2) | Times(t1,t2) -> (match (t1,t2) with
       (* Example x := 1 + 2 *)
       (* This will generate (loadi and addi) or (loadi and multi), etc. *)
