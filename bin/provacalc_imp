@@ -1,8 +1,8 @@
 def main with input x output out as
-    x:=2; 
-    while x < 0 do
+    a := 0;
+    while a < 10 do
     (
-        y := x + 3;
-        x:= y;
+        b := a+1;
+        c := c+b;
+        a := b * 2;
     );
-    out := 1 - y;

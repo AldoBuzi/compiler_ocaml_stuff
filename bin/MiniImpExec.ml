@@ -1,6 +1,8 @@
 open MiniLang.MiniImp
 open MiniLang.MiniImpControlFlow
 open MiniLang.CFGDataFlowAnalysis
+open MiniLang.LiveVariableAnalysis
+open MiniLang.DefinedVariablesAnalysis
 open Lexing
 let () =
   let colnum pos =
@@ -22,7 +24,12 @@ with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_st
     hr_graph nodes edges; print_endline "--------";
     (* *)
     (* There we will have data flow analysis and its result *)
-    let (dv_in, dv_out) = df_analysis (nodes, edges) in
+    let (dv_in, dv_out) = defined_variables_analysis (nodes, edges) in
+    Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_in; print_endline "--------";
+    print_endline "DV_OUT: \n";
+    Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_out; print_endline "--------";
+    print_endline "\n-------------------  LIVE ANALYSIS  -------------------------\n";
+    let (dv_in, dv_out) = live_analysis (nodes, edges) in
     Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_in; print_endline "--------";
     print_endline "DV_OUT: \n";
     Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_out; print_endline "--------";

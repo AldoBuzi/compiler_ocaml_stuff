@@ -2,16 +2,10 @@ open MiniImpControlFlow
 
 type label = int ;;
 
+
 let keys_of_hashtable table =
   Hashtbl.fold (fun key _ acc -> key :: acc) table []
 ;;
-
-let reversed_edges = Hashtbl.create 256;;
-let reverse_edges edges = 
-  let rec iter_list dest = function
-  |[] -> reversed_edges
-  | x:: elem' -> Hashtbl.add reversed_edges x dest; iter_list dest elem' in
-  Hashtbl.iter (fun key value -> ignore (iter_list key value) ) edges ;;
 
 (*
  Stuff to build inital set of registers
@@ -30,8 +24,6 @@ let find_or_empty_set table key =
   try Hashtbl.find table key with
   | _ -> StringSet.empty;;
 
-
-let initial_registers = ref StringSet.empty;;
 let in_regs = Hashtbl.create 256;;
 let out_regs = Hashtbl.create 256;;
 
@@ -41,27 +33,12 @@ let dv_in block =
 let dv_out block =
     find_or_empty_set out_regs block;;
 
-let rec init_registers blocks nodes = 
-  let add_registers = function
-  | Assign(variable, _)-> 
-    initial_registers := StringSet.add variable !initial_registers;
-  | _ -> ignore ()
-  in 
-  let rec iterate_block b = 
-    match b with
-    | [] -> []
-    | instruction :: b' -> add_registers instruction; iterate_block b'
-    in
-  (* Special register added statically *)
-  initial_registers := StringSet.add "in" !initial_registers;
-  match blocks with
-  | [] -> ()
-  | x :: lis' -> ignore (iterate_block (Hashtbl.find nodes x)); init_registers lis' nodes
 
+let print_set_as_list set =
+  let elements = StringSet.elements set in
+  String.concat "; " elements
+;;
 
-(*
- Start of analysis
-*)
 let rec get_defined_variables block = 
   match block with
   | [] -> StringSet.empty
@@ -71,23 +48,35 @@ let rec get_defined_variables block =
     | _ -> get_defined_variables block'
   )
 ;;
+let get_used_variables block = 
+  let rec ops_variables ops = 
+    match ops with
+    | MiniImp.Variable(variable) -> StringSet.add variable StringSet.empty
+    | Plus(t1,t2) | Minus(t1,t2) | Times(t1,t2)  -> StringSet.union (ops_variables t1) (ops_variables t2)
+    | _ -> StringSet.empty
+  in
+  let rec compute block defined_vars =
+  match block with
+  | [] -> StringSet.empty
+  | ins :: block' -> (match ins with
+    | Assign(variable, ops) -> 
+      let used_vars = StringSet.diff (ops_variables ops) defined_vars in
+      StringSet.union used_vars (compute block' (StringSet.add variable defined_vars))
+    | _ -> compute block' defined_vars
+  ) in 
+  compute block StringSet.empty
+;;
 
-let df_analysis (cfg : (label, statement list) Hashtbl.t * (label, label list) Hashtbl.t ) = 
-  match cfg with
-  |(nodes, edges) ->
-    (
-      let blocks = List.sort compare (keys_of_hashtable nodes) in 
-      init_registers blocks nodes;
+let df_analysis (blocks: label list) initial_set l_dv_in l_dv_out = 
+  ( 
       (* init all sets *)
+      Hashtbl.clear in_regs;
+      Hashtbl.clear out_regs;
       let rec init_dv = function
       |[] -> ()
-      | block:: blocks' -> Hashtbl.add in_regs block !initial_registers; Hashtbl.add out_regs block !initial_registers; init_dv blocks' in
+      | block:: blocks' -> Hashtbl.add in_regs block initial_set; Hashtbl.add out_regs block initial_set; init_dv blocks' in
       init_dv blocks;
 
-      (* build hash table of reversed direction of the edges *)
-      reverse_edges edges;
-      Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%d]\n" x y) reversed_edges; print_endline "--------";
-      
       (* compute local dv_in and dv_out *)
       let rec scan_blocks = function
       | [] -> ()
@@ -95,31 +84,12 @@ let df_analysis (cfg : (label, statement list) Hashtbl.t * (label, label list) H
         (* 
           DV_IN STUFF 
         *)
-        (
-        print_endline "iterating";
-        Printf.printf "%d\n Predecessors:\n" block;
-        let predecessors = Hashtbl.find_all reversed_edges block in
-        List.iter (Printf.printf "sos %d \n") predecessors;
-        (match predecessors with
-          (* if empty is initial block*)
-        | [] -> Hashtbl.replace in_regs block (StringSet.add "in" StringSet.empty)
-        | x:: pred' -> 
-          let res_set = find_or_empty_set out_regs x in
-          let rec scan_preds set = function
-            |[] -> set
-            |pred :: pred' -> scan_preds (StringSet.inter set (dv_out pred)) pred' in
-          Hashtbl.replace in_regs block ( scan_preds res_set pred');
-          Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) in_regs; print_endline "--------");
-        
-        
-        print_endline "DVOUT:\n";
+        l_dv_in block;
         (*
           DV_OUT STUFF
         *)
-        Hashtbl.replace out_regs block (StringSet.union (dv_in block) (get_defined_variables (Hashtbl.find nodes block) ));
-        Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) out_regs; print_endline "--------";
+        l_dv_out block;
         scan_blocks blocks';
-        )
         
       in
         let rec find_fix_point g_in g_out =
@@ -133,4 +103,4 @@ let df_analysis (cfg : (label, statement list) Hashtbl.t * (label, label list) H
           in
         find_fix_point (Hashtbl.create 0) (Hashtbl.create 0)
         
-    )
+  );;

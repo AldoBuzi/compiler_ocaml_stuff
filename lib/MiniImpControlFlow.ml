@@ -71,6 +71,7 @@ let build_cfg ast_program =
     let skip_id = add_node [Skip] in
     ignore (add_edge t_body_end [skip_id]);
     ignore (add_edge f_body_end [skip_id]);
+    ignore (add_edge skip_id []);
     (guard_id,skip_id)
 
 
@@ -81,6 +82,7 @@ let build_cfg ast_program =
     ignore (add_edge (guard_id) [body_start; skip_id]);
     let b = Hashtbl.find_opt nodes body_end in
     ignore (add_edge (if b = None then body_start else body_end) [guard_id]);
+    ignore (add_edge skip_id []);
     (guard_id, skip_id)
     ) 
   in

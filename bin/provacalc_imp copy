@@ -1,34 +1,9 @@
-def main with input x output out as 
-    out := 0;
-    if x < 10 
-        then 
-            x := 10;
-            x := x + 50;
-        else (x := x - 10; out := x - 100) ; 
-    while x < 100 do (
-        out := out + x;
-        x := x + 1
+def main with input x output out as
+    a := 0;
+    while a < 10 do
+    (
+        b := a+1;
+        c := c+b;
+        a := b * 2;
     );
-    out := (x + 10) * 10;
-    out := x - 1;
-
-
-
-def main with input x output out as 
-    if x < 0 
-        then 
-            x := 50;
-            x := x - 10;
-        else (x := x * 10; out := x) ; 
-    out := 0;
-    if x < 10 
-        then 
-            x := 10;
-            x := x + 50;
-        else (x := x - 10; out := x - 100) ; 
-    while x < 100 do (
-        out := out + x;
-        x := x + 1
-    );
-    out := (x + 10) * 10;
-    out := x - 1;
+    c:= 0;
