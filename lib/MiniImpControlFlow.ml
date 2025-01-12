@@ -50,14 +50,15 @@ let build_cfg ast_program =
     let node2 = find nodes c2_start in
     (* Remove unnecessary skips *)
     let merged = match (List.rev node1,node2) with
-    | (Skip::node1', _) -> List.rev node1' @ node2
-    | (_, Skip::node2') ->node1@node2'
+    | (Skip::node1', _) -> List.rev node1' @ node2  
     | _ -> node1 @ node2 
     in
     Hashtbl.replace nodes c1_end merged;
     Hashtbl.remove nodes c2_start;
     let out_edges = find edges c2_start in
+    let in_edge = try find reversed_edges c2_start with | _ -> -1 in
     ignore (add_edge c1_end out_edges);
+    if in_edge != -1 then ignore (add_edge in_edge [c1_end]);
     Hashtbl.remove edges c2_start;
     (c1_start, c2_end)
 
@@ -74,18 +75,24 @@ let build_cfg ast_program =
 
 
   | WhileDo(cond, body) -> 
-    (* if id = 0, then we are the first node and therefore we must add a dummy skip at start*)
-    let root_id = if !id = 0 then add_node [Skip] else -1 in
     let guard_id = add_node [Guard(cond)] in
-    if root_id != -1 then ignore (add_edge root_id [guard_id]);
     let (body_start,body_end) = build body in
     let skip_id = add_node [Skip] in 
     ignore (add_edge (guard_id) [body_start; skip_id]);
-    ignore (add_edge body_end [guard_id]);
-    ((if root_id != -1 then root_id else guard_id), skip_id)
+    let b = Hashtbl.find_opt nodes body_end in
+    ignore (add_edge (if b = None then body_start else body_end) [guard_id]);
+    (guard_id, skip_id)
     ) 
   in
-  ignore (build ast_program);
+  let (istart, _) = build ast_program in
+  (*if it has outgoing edges, than for sure it was a incoming edges*)
+  (match (try find reversed_edges istart with |_ -> -1  ) with
+  | value -> (
+    if value != -1 then 
+    (Hashtbl.replace nodes 0 [Skip];
+    ignore (add_edge 0 [istart]);
+    )
+  ));
   (nodes, edges)
 ;;
 

@@ -7,10 +7,12 @@ module GenericCFGImpl = functor (Types: CFG_Types) -> struct
   type node = Types.node
   type nodes = (label, node) Hashtbl.t
   type edges = (label,label list) Hashtbl.t
+  type reversed_edges = (label,label) Hashtbl.t
   type cfg = nodes * edges
   let nodes = Hashtbl.create 256
 
   let edges = Hashtbl.create 256
+  let reversed_edges = Hashtbl.create 256
   let id = ref 0
   let add_node (node : node) = 
     id := !id + 1;
@@ -18,6 +20,7 @@ module GenericCFGImpl = functor (Types: CFG_Types) -> struct
     !id
   let add_edge (node: label) (node_list: label list) = 
     Hashtbl.replace edges node node_list;
+    List.iter (fun x -> Hashtbl.replace reversed_edges x node; ) node_list;
     edges
   let get_last_label () = !id
 
