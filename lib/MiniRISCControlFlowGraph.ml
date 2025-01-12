@@ -5,7 +5,6 @@ open GenericCFGImpl(struct type node = comm list end);;
 open VariableRegs;;
 
 type print_list = comm list list [@@deriving show];;
-
 (* Utility to get human readable representation of cfg, thus making debugging easier *) 
 let hr_risc_graph nodes edges = 
   let translate_risc risc = 
@@ -34,6 +33,8 @@ let hr_risc_graph nodes edges =
   Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (show_label_list y)) edges; print_endline "--------";
   ;;
 
+
+
 let evaluate_ops op r1 r2 r3 =
   match op with
   | MiniImp.Plus(Constant(v1),Constant(v2)) -> [LoadI(v1, r1); AddI(r1, v2,r3 )]
@@ -52,9 +53,14 @@ let evaluate_ops op r1 r2 r3 =
   | Times(_, _) -> [Mult(r1,r2,r3)]
   | _ -> failwith "evaluate_ops : This case wasn't supposed to happen";;
 ;;
+
+(* Utlities *)
 let _NONE = "";;
 let no_reg = fun () -> _NONE;;
 let no_peek = no_reg;;
+
+(* END Utilitis *)
+
 let rec translate_node node = 
   let rec translate_ops ops write_reg = 
     match ops with
@@ -171,7 +177,7 @@ let mini_risc_cfg cfg =
       let rec get_nodes sorted_nodes =
         match sorted_nodes with
         | [] -> []
-        | node:: sorted_nodes' -> let res = translate_node (try Hashtbl.find _nodes node with |_ -> failwith "Porco dio") in ( Hashtbl.add new_nodes node (add_node res); res :: get_nodes sorted_nodes') in
+        | node:: sorted_nodes' -> let res = translate_node (try Hashtbl.find _nodes node with |_ -> failwith "TODO write exception") in ( Hashtbl.add new_nodes node (add_node res); res :: get_nodes sorted_nodes') in
         let _ = get_nodes sorted in
         let rec get_nodes list =
           match list with

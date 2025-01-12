@@ -1,6 +1,6 @@
 open MiniLang.MiniImp
 open MiniLang.MiniImpControlFlow
-
+open MiniLang.CFGDataFlowAnalysis
 open Lexing
 let () =
   let colnum pos =
@@ -18,11 +18,18 @@ let () =
 with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_string lexbuf.lex_curr_p)))
   ) in
     let (nodes,edges) = (match program with
-    | Program(_,_,c) -> build_cfg c) in
-    hr_graph nodes edges; print_endline "--------"; 
-    let (_nodes,_edges) = MiniLang.MiniRISCControlFlowGraph.mini_risc_cfg (nodes,edges) in
+    | Program(_,_,c) -> build_cfg c) in 
+    hr_graph nodes edges; print_endline "--------";
+    (* *)
+    (* There we will have data flow analysis and its result *)
+    let (dv_in, dv_out) = df_analysis (nodes, edges) in
+    Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_in; print_endline "--------";
+    print_endline "DV_OUT: \n";
+    Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_out; print_endline "--------";
+    (* *)
+    (*let (_nodes,_edges) = MiniLang.MiniRISCControlFlowGraph.mini_risc_cfg (nodes,edges) in
     (MiniLang.MiniRISCControlFlowGraph.hr_risc_graph _nodes _edges);
     MiniLang.MiniRISC.hr_risc (MiniLang.MiniRISC.get_mini_risc (_nodes, _edges));
-    print_endline ( Printf.sprintf "%d" (eval program (int_of_string input_v)));
+    print_endline ( Printf.sprintf "%d" (eval program (int_of_string input_v)));*)
     print_newline()
 

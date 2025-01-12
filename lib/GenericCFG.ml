@@ -38,7 +38,12 @@ end
 module VariableRegs = struct
 
   type register = string
-  let variable_regs = Hashtbl.create 256
+  let variable_regs = 
+    let table = Hashtbl.create 256 in
+    (* add two special registers*)
+    Hashtbl.add table "in" "in";
+    Hashtbl.add table "out" "out"; 
+    table
   let id = ref (-1)
   let get_next_register () = 
     id := !id + 1 ;
@@ -55,7 +60,7 @@ module VariableRegs = struct
     Hashtbl.replace variable_regs variable reg;;
   let get_reg_from_variable variable =
     try Hashtbl.find variable_regs variable with
-    | _ -> failwith (Printf.sprintf "Variabile %s not found" variable );;
+    | _ -> failwith (Printf.sprintf "GenericCFG - get_ref_from_variable - Variabile %s not found" variable );;
   let get_next_reg_if_none variable =
     match Hashtbl.find_opt variable_regs variable with
     | Some(reg) -> reg

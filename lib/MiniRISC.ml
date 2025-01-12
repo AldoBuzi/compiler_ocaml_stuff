@@ -29,7 +29,7 @@ let get_label label =
   | 1 -> "main"
   | value -> Printf.sprintf "l%d" value;;
 
-
+(* returns hashtable where keys are labels and values are the risc instructions *)
 let get_mini_risc cfg =
   match cfg with
   | (nodes,edges) -> 
@@ -37,7 +37,7 @@ let get_mini_risc cfg =
       match instruction  with
       | Less(_,_,r3) | And(_,_,r3) -> CJump(r3, l1, l2)
       | Not(_,r2) -> CJump(r2, l1, l2)
-      | _ -> failwith "get_jump_from_risc: this case should have not happened" in
+      | _ -> failwith "get_jump_from_risc: this case should have not happened" in 
     let add_jump_to_node node_id = (match Hashtbl.find edges node_id with
     | [] -> Hashtbl.find nodes node_id
     | elem :: [] -> let node = Hashtbl.find nodes node_id in node @ [Jump(get_label elem)]
@@ -51,7 +51,7 @@ let get_mini_risc cfg =
     ignore (build list);
     risc;;
 
-
+(* Print utility *)
 let hr_risc risc_code = 
   let translate_risc risc = 
     match risc with

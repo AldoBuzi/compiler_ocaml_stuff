@@ -7,7 +7,7 @@ type statement =
 open GenericCFGImpl(struct type node = statement list end)
 
 
-(* Utility to get human readable representation of cfg, thus making debugging easier *) 
+(* Utility to get human readable representation of cfg, this way I make debugging easier *) 
 let hr_graph nodes edges = 
   let rec get_string_a = function
    |Variable(i) -> i
@@ -33,50 +33,58 @@ let hr_graph nodes edges =
   ;;
   
 let build_cfg ast_program =
+  (* The tuple represents the "i1" and "f1" of the cfg representation *)
   let rec build ast_program = 
+    (* TODO : Fix while skips*)
   (match ast_program with
-  | MiniImp.Skip ->  ignore (add_node [Skip]); ignore (add_edge (get_last_label()) []); (get_last_label())
-  | Assign(t1,t2) -> ignore (add_node [Assign(t1,t2)]); ignore (add_edge (get_last_label()) []); (get_last_label())
+  | MiniImp.Skip ->  let id = add_node [Skip] in ignore (add_edge (id) []); (id,id)
+
+
+  | Assign(t1,t2) -> let id =  add_node [Assign(t1,t2)] in ignore (add_edge (id) []); (id,id)
+
+
   | CommandSeq(c1,c2) -> 
-    let first_id = build c1 in
-    let c1_last_id = (get_last_label()) in
-    let first_id2 = build c2 in
-    let node1 = find nodes c1_last_id in
-    let node2 = find nodes first_id2 in
+    let (c1_start,c1_end) = build c1 in
+    let (c2_start,c2_end) = build c2 in
+    let node1 = find nodes c1_end in
+    let node2 = find nodes c2_start in
     (* Remove unnecessary skips *)
     let merged = match (List.rev node1,node2) with
     | (Skip::node1', _) -> List.rev node1' @ node2
     | (_, Skip::node2') ->node1@node2'
-    | _ -> node1 @ node2
+    | _ -> node1 @ node2 
     in
-    let _ = Hashtbl.replace nodes c1_last_id merged in
-    let _ = Hashtbl.remove nodes (first_id2) in
-    let out_edges = find edges (first_id2) in
-    let _ = add_edge c1_last_id out_edges in
-    let _ = Hashtbl.remove edges first_id2 in
-    first_id
+    Hashtbl.replace nodes c1_end merged;
+    Hashtbl.remove nodes c2_start;
+    let out_edges = find edges c2_start in
+    ignore (add_edge c1_end out_edges);
+    Hashtbl.remove edges c2_start;
+    (c1_start, c2_end)
+
+
   | IfThenElse(cond, if_true, if_false) -> 
-    let _ = add_node [Guard cond] in
-    let guard_id = (get_last_label()) in
-    let true_body = build if_true in
-    let false_body = build if_false in
-    let _ = add_edge guard_id [true_body; false_body] in
-    let _ = add_node [Skip] in
-    let _ = add_edge true_body [(get_last_label())] in
-    let _ = add_edge false_body [(get_last_label())] in
-    guard_id
+    let guard_id = add_node [Guard cond] in
+    let (t_body_start, t_body_end) = build if_true in
+    let (f_body_start,f_body_end) = build if_false in
+    ignore (add_edge guard_id [t_body_start; f_body_start]);
+    let skip_id = add_node [Skip] in
+    ignore (add_edge t_body_end [skip_id]);
+    ignore (add_edge f_body_end [skip_id]);
+    (guard_id,skip_id)
+
+
   | WhileDo(cond, body) -> 
-    ignore (add_node [Skip]);
-    let root_id = (get_last_label()) in
-    let _ = add_node [Guard(cond)] in
-    let _ = add_edge (get_prec_label()) [(get_last_label())] in
-    let guard_id = (get_last_label()) in
-    let body_id = build body in
-    let _ = add_node [Skip] in
-    let _ = add_edge (guard_id) [body_id;(get_last_label())] in
-    let _ = add_edge body_id [guard_id] in
-    root_id
-    ) in
+    (* if id = 0, then we are the first node and therefore we must add a dummy skip at start*)
+    let root_id = if !id = 0 then add_node [Skip] else -1 in
+    let guard_id = add_node [Guard(cond)] in
+    if root_id != -1 then ignore (add_edge root_id [guard_id]);
+    let (body_start,body_end) = build body in
+    let skip_id = add_node [Skip] in 
+    ignore (add_edge (guard_id) [body_start; skip_id]);
+    ignore (add_edge body_end [guard_id]);
+    ((if root_id != -1 then root_id else guard_id), skip_id)
+    ) 
+  in
   ignore (build ast_program);
   (nodes, edges)
 ;;
