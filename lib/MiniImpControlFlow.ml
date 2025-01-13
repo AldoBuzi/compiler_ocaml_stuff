@@ -56,8 +56,6 @@ let build_cfg ast_program =
     Hashtbl.replace nodes c1_end merged;
     Hashtbl.remove nodes c2_start;
     let out_edges = find edges c2_start in
-    Printf.printf "\n[%d" c2_start;
-    Printf.printf "empty %s]\n" (show_label_list out_edges);
     let in_edge = try find reversed_edges c2_start with | _ -> -1 in
     ignore (add_edge c1_end out_edges);
     if in_edge != -1 then ignore (add_edge in_edge [c1_end]);
