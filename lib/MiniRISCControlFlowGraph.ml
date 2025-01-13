@@ -87,7 +87,7 @@ let rec translate_node node =
           let t1_reg = get_reg_from_variable t1 in 
           let t2_reg = get_reg_from_variable t2 in 
           evaluate_ops ops t1_reg t2_reg (write_reg())
-      (* If we arrive there, then the assignment it's of the form (x = z + 3 + y * z) *)
+      (* If we arrive there, then the assignment is of the form (x = z + 3 + y * z) *)
       | (Variable(t1), other) | (other, Variable(t1)) ->  
           let t1_reg = get_reg_from_variable t1 in 
           (* this call can generate intermediate registers to allocate temporary results *)

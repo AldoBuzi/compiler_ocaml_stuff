@@ -5,4 +5,8 @@
 (library
  (name MiniLang)
  (preprocess(pps ppx_deriving.show))
- (modules MiniFunLexer MiniFunParser MiniFun MiniImp MiniImpParser MiniImpLexer GenericCFG MiniImpControlFlow MiniRISC MiniRISCControlFlowGraph CFGDataFlowAnalysis DefinedVariablesAnalysis LiveVariableAnalysis))
+ (modules MiniFunLexer MiniFunParser MiniFun MiniImp MiniImpParser MiniImpLexer 
+ GenericCFG MiniImpControlFlow MiniRISC MiniRISCControlFlowGraph 
+ CFGDataFlowAnalysis DefinedVariablesAnalysis LiveVariableAnalysis
+ LiveRangeOptimization
+ ))

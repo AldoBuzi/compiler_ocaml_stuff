@@ -63,7 +63,7 @@ module VariableRegs = struct
     Hashtbl.replace variable_regs variable reg;;
   let get_reg_from_variable variable =
     try Hashtbl.find variable_regs variable with
-    | _ -> failwith (Printf.sprintf "GenericCFG - get_ref_from_variable - Variabile %s not found" variable );;
+    | _ -> link_variable variable (get_next_register()); get_last_register() ;;
   let get_next_reg_if_none variable =
     match Hashtbl.find_opt variable_regs variable with
     | Some(reg) -> reg

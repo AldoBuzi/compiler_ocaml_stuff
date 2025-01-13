@@ -3,6 +3,7 @@ open MiniLang.MiniImpControlFlow
 open MiniLang.CFGDataFlowAnalysis
 open MiniLang.LiveVariableAnalysis
 open MiniLang.DefinedVariablesAnalysis
+open MiniLang.LiveRangeOptimization
 open Lexing
 let () =
   let colnum pos =
@@ -37,6 +38,8 @@ with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_st
     Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_in; print_endline "--------";
     print_endline "DV_OUT: \n";
     Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (print_set_as_list y)) dv_out; print_endline "--------";
+    let (new_nodes, new_edges) = (live_range_optimization (dv_in, dv_out) (_nodes, _edges)) in
+    (MiniLang.MiniRISCControlFlowGraph.hr_risc_graph new_nodes new_edges);
     (* *)
     (*MiniLang.MiniRISC.hr_risc (MiniLang.MiniRISC.get_mini_risc (_nodes, _edges));
     print_endline ( Printf.sprintf "%d" (eval program (int_of_string input_v)));*)

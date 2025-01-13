@@ -56,6 +56,8 @@ let build_cfg ast_program =
     Hashtbl.replace nodes c1_end merged;
     Hashtbl.remove nodes c2_start;
     let out_edges = find edges c2_start in
+    Printf.printf "\n[%d" c2_start;
+    Printf.printf "empty %s]\n" (show_label_list out_edges);
     let in_edge = try find reversed_edges c2_start with | _ -> -1 in
     ignore (add_edge c1_end out_edges);
     if in_edge != -1 then ignore (add_edge in_edge [c1_end]);
@@ -69,8 +71,10 @@ let build_cfg ast_program =
     let (f_body_start,f_body_end) = build if_false in
     ignore (add_edge guard_id [t_body_start; f_body_start]);
     let skip_id = add_node [Skip] in
-    ignore (add_edge t_body_end [skip_id]);
-    ignore (add_edge f_body_end [skip_id]);
+    let b1 = Hashtbl.find_opt nodes t_body_end in
+    let b2 = Hashtbl.find_opt nodes f_body_end in
+    ignore (add_edge (if b1 = None then t_body_start else t_body_end) [skip_id]);
+    ignore (add_edge (if b2 = None then f_body_start else f_body_end) [skip_id]);
     ignore (add_edge skip_id []);
     (guard_id,skip_id)
 
