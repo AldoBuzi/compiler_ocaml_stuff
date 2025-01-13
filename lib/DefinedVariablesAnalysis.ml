@@ -33,6 +33,15 @@ let rec init_variables_set blocks nodes =
   | x :: lis' -> ignore (iterate_block (Hashtbl.find nodes x)); init_variables_set lis' nodes
 
 
+let rec get_defined_variables block = 
+  match block with
+  | [] -> StringSet.empty
+  | ins :: block' -> (match ins with
+    | Assign(variable,_) -> 
+      StringSet.add variable (get_defined_variables block')
+    | _ -> get_defined_variables block'
+  )
+;;
 (*
  Start of analysis
 *)

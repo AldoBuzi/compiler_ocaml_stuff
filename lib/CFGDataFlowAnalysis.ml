@@ -1,5 +1,3 @@
-open MiniImpControlFlow
-
 type label = int ;;
 
 
@@ -37,34 +35,6 @@ let dv_out block =
 let print_set_as_list set =
   let elements = StringSet.elements set in
   String.concat "; " elements
-;;
-
-let rec get_defined_variables block = 
-  match block with
-  | [] -> StringSet.empty
-  | ins :: block' -> (match ins with
-    | Assign(variable,_) -> 
-      StringSet.add variable (get_defined_variables block')
-    | _ -> get_defined_variables block'
-  )
-;;
-let get_used_variables block = 
-  let rec ops_variables ops = 
-    match ops with
-    | MiniImp.Variable(variable) -> StringSet.add variable StringSet.empty
-    | Plus(t1,t2) | Minus(t1,t2) | Times(t1,t2)  -> StringSet.union (ops_variables t1) (ops_variables t2)
-    | _ -> StringSet.empty
-  in
-  let rec compute block defined_vars =
-  match block with
-  | [] -> StringSet.empty
-  | ins :: block' -> (match ins with
-    | Assign(variable, ops) -> 
-      let used_vars = StringSet.diff (ops_variables ops) defined_vars in
-      StringSet.union used_vars (compute block' (StringSet.add variable defined_vars))
-    | _ -> compute block' defined_vars
-  ) in 
-  compute block StringSet.empty
 ;;
 
 let df_analysis (blocks: label list) initial_set l_dv_in l_dv_out = 
