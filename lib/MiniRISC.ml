@@ -71,7 +71,8 @@ let hr_risc risc_code =
     | LoadI(i,r2) -> Printf.sprintf "\tloadi %d => %s" i r2
     | CJump(r,l1,l2) -> Printf.sprintf "\tcjump %s %s %s" r l1 l2
     | Jump(l1) -> Printf.sprintf "\tjump %s" l1
-    | _ -> failwith "translate_risc: not mapped yet" in
+    | Store(r1,r2) -> Printf.sprintf "\tstore %s => %s" r1 r2
+    in
   let rec get_node_representation node = 
     match node with
     | [] -> ""

@@ -22,7 +22,8 @@ let hr_risc_graph nodes edges =
     | Not(r1,r2) -> Printf.sprintf "\tnot %s => %s" r1 r2
     | Copy(r1,r2) -> Printf.sprintf "\tcopy %s => %s" r1 r2
     | Load(r1,r2) -> Printf.sprintf "\tload %s => %s" r1 r2
-    | LoadI(i,r2) -> Printf.sprintf "\tloadi %d => %s" i r2
+    | LoadI(i,r2) -> if i > 1000 then Printf.sprintf "\tloadi %X => %s" i r2  else Printf.sprintf "\tloadi %d => %s" i r2
+    | Store(r1,r2) ->Printf.sprintf "\tstore %s => %s" r1 r2
     | _ -> failwith "translate_risc: not mapped yet" in
   let rec get_node_representation node = 
     match node with

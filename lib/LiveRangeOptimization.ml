@@ -35,73 +35,73 @@ let print_int_pair_set set =
   ) set
 ;;
 
-let replace_regs r1 r2 merged nodes =
-  let rec replace_regs_block _r1 _r2 merged_reg block =
+let replace_regs _r1 _r2 merged_set nodes =
+  let rec replace_regs_block _r1 _r2 block =
     match block with
     | [] -> []
     | ins:: block' -> 
       let new_ins =  (match ins with
         | Add(r1,r2,r3) -> Some ( Add(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r2 then merged_reg else if r2 = _r2 then merged_reg else r2),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r2 || _r2 = r2  then _r1 else r2),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | Sub(r1,r2,r3) -> Some ( Sub(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r2 then merged_reg else if r2 = _r2 then merged_reg else r2),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r2 || _r2 = r2  then _r1 else r2),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | Mult(r1,r2,r3) -> Some ( Mult(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r2 then merged_reg else if r2 = _r2 then merged_reg else r2),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r2 || _r2 = r2  then _r1 else r2),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | And(r1,r2,r3) -> Some (And(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r2 then merged_reg else if r2 = _r2 then merged_reg else r2),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r2 || _r2 = r2  then _r1 else r2),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | Less(r1,r2,r3)  -> Some (Less(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r2 then merged_reg else if r2 = _r2 then merged_reg else r2),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r2 || _r2 = r2  then _r1 else r2),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         
         | AddI(r1,v,r3) -> 
           (* if instruction it's like AddI r0, 0, r0; then just remove it, it's not useful *)
-          let r1 = if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1 in
-          let r3 = if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3 in
+          let r1 = if _r1 = r1 || _r2 = r1 then _r1 else r1 in
+          let r3 = if _r1 = r3 || _r2 = r3 then _r1 else r3 in
           if r1 = r3 && v = 0 then None 
           else Some ( AddI(r1,v,r3) )
         | SubI(r1,v,r3) -> 
           (* if instruction it's like SubI r0, 0, r0; then just remove it, it's not useful *)
-          let r1 = if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1 in
-          let r3 = if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3 in
+          let r1 = if _r1 = r1 || _r2 = r1 then _r1 else r1 in
+          let r3 = if _r1 = r3 || _r2 = r3 then _r1 else r3 in
           if r1 = r3 && v = 0 then None 
           else Some (SubI(r1,v,r3) )
         | MultI(r1,v,r3) ->
           (* if instruction it's like MultI r0, 1, r0; (a = a * 1) then just remove it, it's not useful *) 
-          let r1 = if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1 in
-          let r3 = if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3 in
+          let r1 = if _r1 = r1 || _r2 = r1 then _r1 else r1 in
+          let r3 = if _r1 = r3 || _r2 = r3 then _r1 else r3 in
           if r1 = r3 && v = 1 then None 
           else Some(MultI(r1,v,r3))
         | AndI(r1,v,r3) -> Some( AndI(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
           v,
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | Not(r1,r3) -> Some(Not(
-          (if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1),
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r1 || _r2 = r1 then _r1 else r1),
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | LoadI(v,r3) -> Some(LoadI(
           v,
-          (if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3)
+          (if _r1 = r3 || _r2 = r3  then _r1 else r3)
           ))
         | Copy(r1,r3)  -> 
           (* if instruction it's like Copy r0, r0; then just remove it, it's not useful *)
-          let r1 = if _r1 = r1 then merged_reg else if r1 = _r2 then merged_reg else r1 in
-          let r3 = if _r1 = r3 then merged_reg else if r3 = _r2 then merged_reg else r3 in
+          let r1 = if _r1 = r1 || _r2 = r1 then _r1 else r1 in
+          let r3 = if _r1 = r3 || _r2 = r3 then _r1 else r3 in
           if r1 = r3 then None
           else
             Some(Copy(r1,r3))
@@ -109,15 +109,13 @@ let replace_regs r1 r2 merged nodes =
     ) in
     (* removed silly instruction that the user my write (note: this could have been done in previous phases of the compilation) *)
     match new_ins with
-    | None -> replace_regs_block _r1 _r2 merged_reg block'
-    | Some(ins) ->  ins :: replace_regs_block _r1 _r2 merged_reg block'
+    | None -> replace_regs_block _r1 _r2 block'
+    | Some(ins) ->  ins :: replace_regs_block _r1 _r2 block'
   in
-  match merged with
-  | (merged_reg, set) -> 
-    LiveRangeSet.iter (function (_,iend) -> 
-      let new_block = replace_regs_block r1 r2 merged_reg (Hashtbl.find nodes iend) in
-      Hashtbl.replace nodes iend new_block;
-      ) set; 
+  LiveRangeSet.iter (function (_,iend) -> 
+    let new_block = replace_regs_block _r1 _r2 (Hashtbl.find nodes iend) in
+    Hashtbl.replace nodes iend new_block;
+    ) merged_set; 
 ;;
 
 let live_range_optimization live_set = function
@@ -144,19 +142,16 @@ let live_range_optimization live_set = function
       match regs with
       | [] -> ()
       | reg :: list' -> 
-        match check reg regs with
-        | None -> compute list'
-        | Some((r1,r2), set) -> 
-          Hashtbl.remove live_ranges r1;
-          Hashtbl.remove live_ranges r2;
-          let merged_reg = (match (r1,r2) with
-          (* out register has max priority, next in and then everyone else *)
-          | (_,"out") |("out",_) -> "out"
-          | ("in", _) | (_, "in") -> "in"
-          | (x,_) -> x
-          ) in
-          Hashtbl.add live_ranges merged_reg set;
-          replace_regs r1 r2 (merged_reg, set) nodes;
+        (* I do not merge in and out *)
+        if reg = "in" || reg = "out" then compute list'
+        else 
+          match check reg regs with
+          | None -> compute list'
+          | Some((r1,r2), set) -> 
+            Hashtbl.remove live_ranges r1;
+            Hashtbl.remove live_ranges r2;
+            Hashtbl.add live_ranges r1 set;
+            replace_regs r1 r2 set nodes;
     in
     (* iterate till no remaining register can be merged *)
     let rec merge_regs merge_set = 

@@ -1,10 +1,19 @@
-def main with input x output out as 
-    out := z;
-    if z < 1 then
+def main with input in output out as 
+    x := in;
+    b := 5;
+    a := 0;
+    if a < 10 then
     (
-        z := out;
+        b := in;
     )
-    else (
-        y := 5;
+    else z := b;
+    c := 0;
+    p := x + 5;
+    while c < 10 do (
+        c := c + 1;
+        s := c * 2; 
+        if s < 7 then
+            c := 100;
+        else s := s + 1;
     );
-    out := x;
+    out := p;

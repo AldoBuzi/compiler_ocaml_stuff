@@ -8,5 +8,5 @@
  (modules MiniFunLexer MiniFunParser MiniFun MiniImp MiniImpParser MiniImpLexer 
  GenericCFG MiniImpControlFlow MiniRISC MiniRISCControlFlowGraph 
  CFGDataFlowAnalysis DefinedVariablesAnalysis LiveVariableAnalysis
- LiveRangeOptimization
+ LiveRangeOptimization RegisterAllocator
  ))

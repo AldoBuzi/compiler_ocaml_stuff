@@ -10,11 +10,12 @@ let rec get_defined_variables block =
       StringSet.add r1 (StringSet.add r2 (get_defined_variables block'))
     | AddI(r1,_,_) | SubI(r1,_,_) | MultI(r1,_,_) | AndI(r1,_,_) | Not(r1,_) | Copy(r1,_) | Load(r1,_) | CJump(r1,_,_) -> 
       StringSet.add r1 (get_defined_variables block')
+    (* Nop, Jump, CJump and Store fall there*)
     | _ -> get_defined_variables block'
   )
 ;;
 
-let get_used_variables block = 
+let get_used_variables block initial_set = 
   let rec compute block defined_regs =
   match block with
   | [] -> StringSet.empty
@@ -32,7 +33,7 @@ let get_used_variables block =
       StringSet.union used_regs (compute block' defined_regs)
     | _ -> compute block' defined_regs
   ) in 
-  compute block StringSet.empty
+  compute block initial_set
 ;;
 
 let live_analysis (cfg : (int, comm list) Hashtbl.t * (int, int list) Hashtbl.t )  =
@@ -41,13 +42,13 @@ let live_analysis (cfg : (int, comm list) Hashtbl.t * (int, int list) Hashtbl.t 
       let blocks = List.sort (fun x y -> compare y x) (keys_of_hashtable nodes) in
       let l_dv_in block = 
         let defined_vars = get_defined_variables (Hashtbl.find nodes block) in
-        let defined_vars = if List.hd (List.rev blocks) = block then StringSet.add "in" defined_vars else defined_vars in
+        let initial_set = if List.hd (List.rev blocks) = block then StringSet.add "in" StringSet.empty else StringSet.empty in
         Hashtbl.replace in_regs block (
           StringSet.union 
-            (get_used_variables (Hashtbl.find nodes block))  
+            (get_used_variables (Hashtbl.find nodes block) initial_set)  
             (StringSet.diff 
               (dv_out block) 
-              defined_vars
+              (StringSet.union initial_set defined_vars)
             ) 
         );
       in
