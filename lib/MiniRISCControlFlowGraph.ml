@@ -171,18 +171,17 @@ let rec translate_node node =
 let mini_risc_cfg cfg = 
   match cfg with
   | (_nodes, _edges) ->
-      let res = ref [] in
-      (Hashtbl.iter (fun x _ -> (res :=  x :: !res)) _nodes;
-      let sorted = List.sort compare !res in
-      let new_nodes = Hashtbl.create 256 in
-      let rec get_nodes sorted_nodes =
-        match sorted_nodes with
+    let res = Hashtbl.fold (fun x _ acc -> x :: acc ) _nodes [] in
+    let sorted = List.sort compare res in
+    let new_nodes = Hashtbl.create 256 in
+    let rec get_nodes sorted_nodes =
+      match sorted_nodes with
+      | [] -> []
+      | node:: sorted_nodes' -> let res = translate_node (try Hashtbl.find _nodes node with |_ -> failwith "TODO write exception") in ( Hashtbl.add new_nodes node (add_node res); res :: get_nodes sorted_nodes') in
+      let _ = get_nodes sorted in
+      let rec get_nodes list =
+        match list with
         | [] -> []
-        | node:: sorted_nodes' -> let res = translate_node (try Hashtbl.find _nodes node with |_ -> failwith "TODO write exception") in ( Hashtbl.add new_nodes node (add_node res); res :: get_nodes sorted_nodes') in
-        let _ = get_nodes sorted in
-        let rec get_nodes list =
-          match list with
-          | [] -> []
-          | x:: list' -> (Hashtbl.find new_nodes x) :: get_nodes list' in
-        (nodes, (Hashtbl.iter (fun x y -> ignore ( add_edge (try (Hashtbl.find new_nodes x) with |_ -> failwith (Printf.sprintf "Not found %s" (string_of_int x))) (get_nodes y)  )) _edges; edges)) 
-      );;
+        | x:: list' -> (Hashtbl.find new_nodes x) :: get_nodes list' in
+      (nodes, (Hashtbl.iter (fun x y -> ignore ( add_edge (try (Hashtbl.find new_nodes x) with |_ -> failwith (Printf.sprintf "Not found %s" (string_of_int x))) (get_nodes y)  )) _edges; edges)) 
+;;
