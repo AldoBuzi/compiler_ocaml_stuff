@@ -8,9 +8,8 @@ end);;
 
 let live_ranges : (string, LiveRangeSet.t) Hashtbl.t = Hashtbl.create 256;;
 
-let compute_live_ranges live_set = function
-  | (_,edges) -> 
-    match live_set with
+let compute_live_ranges live_set edges = 
+  match live_set with
       | (live_in_tbl,live_out_tbl) -> 
       (
           let rec scan_out_regs source regs = 
@@ -115,7 +114,7 @@ let replace_regs _r1 _r2 merged_set nodes =
 
 let live_range_optimization live_set = function
   |(nodes,edges) -> 
-    compute_live_ranges live_set (nodes, edges);
+    compute_live_ranges live_set edges;
     let rec check reg regs = 
       match regs with
       | [] -> None

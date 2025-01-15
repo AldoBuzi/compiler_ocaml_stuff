@@ -71,6 +71,8 @@ let add_memory_ops instruction is_guard =
     (* Nop, Load, Store, Jump and CJump will fall in this case *)
     | _ -> [instruction]
   ;;
+
+  
 let rec spill_block block = 
   match block with
   | [] -> []

@@ -1,9 +1,0 @@
-def main with input x output out as
-    a := 0;
-    while a < 10 do
-    (
-        b := a+1;
-        c := c+b;
-        a := b * 2;
-    );
-    c:= 0;

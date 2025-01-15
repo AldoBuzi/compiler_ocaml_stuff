@@ -1,12 +1,6 @@
 type integers = int [@@deriving show];;
 
 
-(*
- Added labels to nodes
- Map for nodes/edges?
- Save input x and ouput y 
-*)
-
 type variable = string [@@deriving show];;
 type ops = 
  |Variable of variable
@@ -34,13 +28,4 @@ type command =
 type program = 
 |Program of variable * variable * command;;
 
-(* EXPOSE ONLY eval *)
-(*type 't env = variable -> 't;;*)
-(*val my_hash : (variable, integers) Hashtbl.t*)
-
-(*val emptyenv: variable -> 'a*)
-(*val bind: (variable, integers) Hashtbl.t -> variable -> integers -> (variable, integers) Hashtbl.t
-val eval_ops : (variable, integers) Hashtbl.t -> ops -> int
-val eval_bool : (variable, integers) Hashtbl.t -> boolean -> bool
-val eval_command: (variable, integers) Hashtbl.t -> command -> (variable, integers) Hashtbl.t*)
 val eval: program -> integers -> integers
