@@ -83,6 +83,6 @@ let hr_risc risc_code =
     match sorted with
     | [] -> ""
     | elem :: sorted' -> let res = get_node_representation (Hashtbl.find risc_code elem) in Printf.sprintf "%s:%s\n%s" elem res (print_risc sorted') in
-  print_endline (print_risc sorted)
+  print_risc sorted
   ;;
 

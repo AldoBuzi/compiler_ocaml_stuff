@@ -1,11 +1,11 @@
 open Lexing
 let () =
   let colnum pos =
-    (pos.pos_cnum - pos.pos_bol) - 1 in
-  let pos_string pos =
+    (pos.Lexing.pos_cnum - pos.Lexing.pos_bol) in
+  let pos_string pos=
   let l = string_of_int pos.pos_lnum
-  and c = string_of_int ((colnum pos) + 1) in
-  "line " ^ l ^ ", column " ^ c in
+  and c = string_of_int (colnum pos) in
+  "lines " ^ l ^ ", column " ^ c in
   if Array.length Sys.argv != 2 then
     failwith "Argument MiniFun-program is needed";
   let in_file = open_in Sys.argv.(1) in

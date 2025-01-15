@@ -27,14 +27,10 @@ type command =
 type program = 
 |Program of variable * variable * command;;
 
-(*type 't env = variable -> 't;;*)
 let my_hash = Hashtbl.create 256;;
 
 
 
-(*let emptyenv = function x -> failwith (Printf.sprintf "Error: Variable %s is not defined" (x));;*)
-(* print hash table *)
-(* Hashtbl.iter (fun x y -> Printf.printf "%s -> %d\n" x y) s; print_endline "--------";  *)
 let bind (s: ('a, 'b) Hashtbl.t) (x: variable) (v: integers) = Hashtbl.replace s x v; s;;
 
 let find table variable = 

@@ -80,7 +80,7 @@ let defined_variables_analysis (cfg : (label, statement list) Hashtbl.t * (label
 
 let undefined_variables_analysis = function
   |(nodes, edges) -> 
-    let (dv_in, _) = defined_variables_analysis (nodes, edges) in
+    let (dv_in, dv_out) = defined_variables_analysis (nodes, edges) in
     let rec get_ops = function
       |MiniImp.Variable(i) -> StringSet.add i StringSet.empty
       |Constant(_) -> StringSet.empty
@@ -123,9 +123,12 @@ let undefined_variables_analysis = function
         ) 
     in
     (* returns list containing all the undefined variables in the program *)
-    Hashtbl.fold (fun node_id block undefined_set-> 
+    (Hashtbl.fold (fun node_id block undefined_set-> 
         let defined_set = Hashtbl.find dv_in node_id in
         let u_set = check_block block defined_set
         in
         (StringSet.fold (fun x  acc -> if (List.exists (fun y -> y = x) undefined_set) then acc else x::acc  ) u_set []) @ undefined_set
-       ) nodes []
+       ) nodes [], 
+       dv_in,
+       dv_out
+    )

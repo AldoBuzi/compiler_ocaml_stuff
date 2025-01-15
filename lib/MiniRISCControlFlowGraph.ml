@@ -29,9 +29,7 @@ let hr_risc_graph nodes edges =
     match node with
     | [] -> ""
     | elem::remaining' -> Printf.sprintf "%s\n%s" (translate_risc elem) (get_node_representation remaining') in
-  Hashtbl.iter (fun x y -> Printf.printf "ID = %d: [\n%s\t]  ->  [%s]\n\n" x (get_node_representation y) (try show_label_list (Hashtbl.find edges x) with |_ -> "")) nodes; print_endline "--------";
-  print_endline "----------------------------------- \n EDGES:";
-  Hashtbl.iter (fun x y -> Printf.printf "ID= [%d]  ->  [%s]\n" x (show_label_list y)) edges; print_endline "--------";
+  Hashtbl.iter (fun x y -> Printf.printf "ID = %d: [\n%s\t]  ->  [%s]\n\n" x (get_node_representation y) (try show_label_list (Hashtbl.find edges x) with |_ -> "")) nodes; 
   ;;
 
 

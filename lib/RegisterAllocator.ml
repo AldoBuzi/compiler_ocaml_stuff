@@ -129,19 +129,14 @@ let register_allocator target_number = function
           populate_reg_to_mem frequencies' (iter + 1)
           )
     in
-    Printf.printf "Number of registers to be allocated %d\n" number_of_regs;
     Printf.printf "Spilled to memory %d variables\n" (number_of_regs - actual_target);
-    List.iter (fun x -> let reg, occ = x in Printf.printf "(%s,%d), " reg occ) frequencies;
     if actual_target < 4 then failwith "RegisterAllocator: impossible to compile the program with fewer than 4 registers"
     else if number_of_regs  <= actual_target then
       (nodes, edges) (* nothing to be done, all values can reside in the registers *)
     else (
       let assignment = populate_reg_to_mem frequencies 0 in
-      Printf.printf "Spilled: %d\n" assignment;
-      Hashtbl.iter (fun key value -> Printf.printf "(%s,%d), " key value  ) reg_to_mem;
       (* if we fall there, we have to spill values to memory *)
       Hashtbl.iter (fun node_id block -> Hashtbl.replace nodes node_id (spill_block block)) nodes; 
-      (MiniRISCControlFlowGraph.hr_risc_graph nodes edges);
 
       (* 
         Translate virtual registers to physical ones 
@@ -150,7 +145,6 @@ let register_allocator target_number = function
       (* get list of all physical registers *)
       (* if target is 4, then we have four registers named as: in, out, r1, r2 *)
       let physical_registers = List.init (target_number-2) (fun i -> "r" ^ string_of_int (i + 1)) in
-      List.iter (fun x -> Printf.printf "%s, " x) physical_registers;
       let last_phys_assigned = ref (-1) in
       let virt_to_phys = Hashtbl.create 256 in
       (* initialize mapping with precomputed assignment *)
@@ -161,10 +155,9 @@ let register_allocator target_number = function
       let find_assigned_physical virtual_reg = 
         try Hashtbl.find virt_to_phys virtual_reg with
         |_ ->
-          Printf.printf "\nLooking for virtual register %s \n" virtual_reg;
           (* get next available physical register *)
           last_phys_assigned := !last_phys_assigned + 1;            
-          if !last_phys_assigned >= actual_target - 2 then (Hashtbl.iter (fun key value -> Printf.printf "Assigned %s -> %s \n" key value) virt_to_phys; failwith ("RegisterAllocator - mapping virtual to physical - Tried assigning reserved register, this must not happen" ^ (Printf.sprintf "thrown by virtual register %s: tried %d" virtual_reg !last_phys_assigned )))
+          if !last_phys_assigned >= actual_target - 2 then failwith ("RegisterAllocator - mapping virtual to physical - Tried assigning reserved register, this must not happen" ^ (Printf.sprintf "thrown by virtual register %s: tried %d" virtual_reg !last_phys_assigned ))
           else
           let physical_register = List.nth physical_registers !last_phys_assigned in
           Hashtbl.add virt_to_phys virtual_reg physical_register;

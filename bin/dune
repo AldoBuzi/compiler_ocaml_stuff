@@ -1,5 +1,5 @@
 (executables
- (public_names MiniTyFun MiniFun MiniFunExec MiniImpExec)
- (names minityfun MiniFun MiniFunExec MiniImpExec)
+ (public_names MiniTyFunInterpreter MiniFun MiniFunInterpreter MiniImpCompiler MiniImpInterpreter)
+ (names MiniTyFunInterpreter MiniFun MiniFunInterpreter MiniImpCompiler MiniImpInterpreter)
  (libraries MiniLang base stdio)
  (preprocess (pps ppx_deriving.show ppx_deriving.ord)))

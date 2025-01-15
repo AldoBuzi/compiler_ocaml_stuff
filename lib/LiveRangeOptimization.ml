@@ -29,11 +29,6 @@ let compute_live_ranges live_set = function
       )
 ;;
 
-let print_int_pair_set set =
-  LiveRangeSet.iter (fun (a, b) ->
-    Printf.printf "(%d, %d)\n" a b
-  ) set
-;;
 
 let replace_regs _r1 _r2 merged_set nodes =
   let rec replace_regs_block _r1 _r2 block =
@@ -121,7 +116,6 @@ let replace_regs _r1 _r2 merged_set nodes =
 let live_range_optimization live_set = function
   |(nodes,edges) -> 
     compute_live_ranges live_set (nodes, edges);
-    Hashtbl.iter (fun x y -> Printf.printf "ID= [%s]  ->\n " x; (print_int_pair_set y)) live_ranges; print_endline "--------";
     let rec check reg regs = 
       match regs with
       | [] -> None
@@ -168,7 +162,6 @@ let live_range_optimization live_set = function
         merge_regs (Hashtbl.copy live_ranges);)
     in
     merge_regs (Hashtbl.create 0);
-    Hashtbl.iter (fun x y -> Printf.printf "ID= [%s]  ->\n " x; (print_int_pair_set y)) live_ranges; print_endline "--------";
     (nodes,edges)
 ;;
       

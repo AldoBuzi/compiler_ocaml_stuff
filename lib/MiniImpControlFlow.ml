@@ -27,9 +27,7 @@ let hr_graph nodes edges =
     | Skip::remaining' -> Printf.sprintf "Skip; %s" (get_node_representation remaining')
     | Assign(t,a)::remaining' -> Printf.sprintf "%s := %s; %s" t (get_string_a a) (get_node_representation remaining')
     | Guard(cond)::remaining' -> Printf.sprintf  "%s?; %s" (get_string_b cond) (get_node_representation remaining') in
-  Hashtbl.iter (fun x y -> Printf.printf "ID= %d: [%s]  ->  [%s]\n" x (get_node_representation y) (try show_label_list (Hashtbl.find edges x) with |_ -> "[]")) nodes; print_endline "--------";
-  print_endline "----------------------------------- \n EDGES:";
-  Hashtbl.iter (fun x y -> Printf.printf "ID= %d  ->  [%s]\n" x (show_label_list y)) edges; print_endline "--------";
+  Hashtbl.iter (fun x y -> Printf.printf "ID= %d: [%s]  ->  [%s]\n" x (get_node_representation y) (try show_label_list (Hashtbl.find edges x) with |_ -> "[]")) nodes;
   ;;
   
 let build_cfg ast_program =

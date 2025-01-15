@@ -32,11 +32,6 @@ let dv_out block =
     find_or_empty_set out_regs block;;
 
 
-let print_set_as_list set =
-  let elements = StringSet.elements set in
-  String.concat "; " elements
-;;
-
 let df_analysis (blocks: label list) initial_set l_dv_in l_dv_out = 
   ( 
       (* init all sets *)
