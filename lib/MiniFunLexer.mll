@@ -16,7 +16,7 @@ rule read = parse
 | "true" {BOOL(bool_of_string (Lexing.lexeme lexbuf))}
 | "fun" {FUN}
 | "if" {IF}
-| "rec" {REC}
+| "letfun" {LETFUN}
 | "then" {THEN}
 | "else" {ELSE}
 | "not" {NOT}
@@ -30,7 +30,7 @@ rule read = parse
 | integer {INT(int_of_string (Lexing.lexeme lexbuf))}
 | variable {VARIABLE(Lexing.lexeme lexbuf)}
 | "=" {EQUAL}
-| "->" {ARROW}
+| "=>" {ARROW}
 | "(" {L_PAR}
 | ")" {R_PAR}
 | "+" {PLUS}
