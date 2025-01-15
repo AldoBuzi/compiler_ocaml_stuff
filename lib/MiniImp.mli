@@ -27,5 +27,7 @@ type command =
 
 type program = 
 |Program of variable * variable * command;;
-
+                    (* env -> command -> env *)
+val eval_command : (variable, integers) Hashtbl.t -> command -> (variable, integers) Hashtbl.t
+(* used by interpreter and the compiler *)
 val eval: program -> integers -> integers

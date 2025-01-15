@@ -15,5 +15,6 @@ let () =
   let program = (try prg MiniLang.MiniFunLexer.read lexbuf 
 with Error -> raise (Failure ("Parse error at " ^ (pos_string lexbuf.lex_curr_p)))
   ) in
-    print_endline (show_evt (eval MiniLang.MiniFun.emptyenv program));
+    let input_v = print_endline "Write your input: "; read_line () in
+    print_endline (show_evt (eval_program program input_v));
     print_newline()

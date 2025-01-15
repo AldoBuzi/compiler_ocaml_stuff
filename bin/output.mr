@@ -30,7 +30,7 @@ l5:	addi r2 1 => r2
 l6:	loadi 100 => r2
 	jump l8
 
-l7:	addi r4 1 => r4
+l7:	addi r1 1 => r1
 	jump l8
 
 l8:	Nop

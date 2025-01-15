@@ -74,3 +74,7 @@ let rec eval env program =
   | And (op1,op2) -> EBool( match ((eval env op1), (eval env op2)) with
     | (EBool(val1), EBool(val2)) -> val1 && val2
     | _ -> failwith "Term provided is not a boolean");;
+
+  
+let eval_program program input_value =
+  eval emptyenv (Apply (program, Int (int_of_string input_value)))

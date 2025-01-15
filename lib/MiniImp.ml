@@ -63,6 +63,8 @@ let rec eval_command env command =
   | CommandSeq(cm1, cm2) -> eval_command (eval_command env cm1) cm2
   | IfThenElse(condition, if_true, if_false) -> if (eval_bool env condition) then eval_command env if_true else eval_command env if_false
   | WhileDo(condition, body) -> if (eval_bool env condition) then eval_command (eval_command env body) (WhileDo(condition, body)) else env;;
+
+  
 let eval program input_value = 
   match program with
   | Program(input, output, command) -> let env = bind my_hash input input_value in find (eval_command env command) output;;

@@ -29,3 +29,5 @@ type evt =
 val emptyenv : variable -> 'a
 
 val eval: evt env -> term -> evt
+(* used by the interpreter *)
+val eval_program: term -> variable -> evt

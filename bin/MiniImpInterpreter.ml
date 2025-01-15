@@ -14,7 +14,7 @@ let () =
   let program = (try MiniLang.MiniImpParser.prg MiniLang.MiniImpLexer.read lexbuf 
 with MiniLang.MiniImpParser.Error -> raise (Failure ("Parse error at " ^ (pos_string lexbuf.Lexing.lex_curr_p)))
   ) in
-  let input_v = print_endline "Write your input: "; read_line () in
+    let input_v = print_endline "Write your input: "; read_line () in
     print_endline ( Printf.sprintf "%d" (eval program (int_of_string input_v)));
     print_newline()
 
