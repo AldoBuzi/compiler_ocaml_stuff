@@ -1,47 +1,67 @@
-main:	copy in => r8
+main:	copy in => r5
 	loadi 5 => r1
-	loadi 0 => r9
-	loadi 0 => r10
-	less r9 r10 => r17
-	cjump r17 l2 l3
+	loadi 10024 => r7
+	loadi 0 => r8
+	store r8 => r7
+	loadi 0 => r6
+	loadi 10024 => r7
+	load r7 => r7
+	less r7 r6 => r8
+	cjump r8 l2 l3
 
 l2:	copy in => r1
 	jump l4
 
-l3:	copy r1 => r16
-	loadi 10004 => r17
-	store r16 => r17
+l3:	copy r1 => r7
+	loadi 10004 => r8
+	store r7 => r8
 	jump l4
 
 l4:	loadi 0 => r2
-	addi r8 5 => r3
-	loadi 10 => r11
-	less r2 r11 => r17
-	cjump r17 l5 l9
+	addi r5 5 => r7
+	loadi 10036 => r8
+	store r7 => r8
+	loadi 10040 => r7
+	loadi 10 => r8
+	store r8 => r7
+	loadi 10040 => r8
+	load r8 => r8
+	less r2 r8 => r8
+	cjump r8 l5 l9
 
 l5:	addi r2 1 => r2
-	multi r2 2 => r6
-	loadi 7 => r7
-	less r6 r7 => r17
-	cjump r17 l6 l7
+	multi r2 2 => r4
+	loadi 10032 => r7
+	loadi 7 => r8
+	store r8 => r7
+	loadi 10032 => r8
+	load r8 => r8
+	less r4 r8 => r8
+	cjump r8 l6 l7
 
 l6:	loadi 100 => r2
 	jump l8
 
-l7:	addi r6 1 => r6
+l7:	addi r4 1 => r4
 	jump l8
 
 l8:	Nop
 	jump l4
 
-l9:	copy r3 => out
-	loadi 0 => r4
-	loadi 1 => r5
-	less r4 r5 => r17
-	cjump r17 l10 l11
+l9:	loadi 10036 => r7
+	load r7 => r7
+	copy r7 => out
+	loadi 0 => r3
+	loadi 10028 => r7
+	loadi 1 => r8
+	store r8 => r7
+	loadi 10028 => r8
+	load r8 => r8
+	less r3 r8 => r8
+	cjump r8 l10 l11
 
-l10:	addi r4 1 => r4
-	addi r4 1 => r4
+l10:	addi r3 1 => r3
+	addi r3 1 => r3
 	jump l9
 
 l11:	Nop
