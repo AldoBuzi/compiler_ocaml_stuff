@@ -11,7 +11,7 @@
 %token LET IN LETFUN
 %token FUN
 %token EQUAL L_PAR R_PAR ARROW
-%token APPLY
+
 (* start nonterminal *)
 %start <term> prg
 

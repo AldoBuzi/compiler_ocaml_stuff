@@ -37,7 +37,7 @@ let get_mini_risc cfg =
       match instruction  with
       | Less(_,_,r3) | And(_,_,r3) -> CJump(r3, l1, l2)
       | Not(_,r2) -> CJump(r2, l1, l2)
-      | _ -> failwith "get_jump_from_risc: this case should have not happened" in 
+      | _ -> failwith ("get_jump_from_risc: this case should have not happened")  in 
     let add_jump_to_node node_id = (match Hashtbl.find edges node_id with
     | [] -> Hashtbl.find nodes node_id
     | elem :: [] -> let node = Hashtbl.find nodes node_id in node @ [Jump(get_label elem)]
@@ -47,7 +47,7 @@ let get_mini_risc cfg =
     let rec build list =  
       (match list with
       |[] -> []
-      | node::nodes' -> let jnode = add_jump_to_node node in (Hashtbl.add risc (get_label node) jnode; build nodes')) in
+      | (node:int)::nodes' -> let jnode = add_jump_to_node node in (Hashtbl.add risc node jnode; build nodes')) in
     ignore (build list);
     risc;;
 
@@ -78,11 +78,10 @@ let hr_risc risc_code =
     | [] -> ""
     | elem::remaining' -> Printf.sprintf "%s\n%s" (translate_risc elem) (get_node_representation remaining') in
   let sorted = List.sort compare (Hashtbl.fold (fun k _ acc -> k :: acc) risc_code []) in
-  let sorted = List.hd (List.rev sorted) :: List.rev (List.tl (List.rev sorted)) in
   let rec print_risc sorted =
     match sorted with
     | [] -> ""
-    | elem :: sorted' -> let res = get_node_representation (Hashtbl.find risc_code elem) in Printf.sprintf "%s:%s\n%s" elem res (print_risc sorted') in
+    | elem :: sorted' -> let res = get_node_representation (Hashtbl.find risc_code elem) in Printf.sprintf "%s:%s\n%s" (get_label elem) res (print_risc sorted') in
   print_risc sorted
   ;;
 

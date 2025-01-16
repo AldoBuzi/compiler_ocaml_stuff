@@ -2,7 +2,7 @@ def main with input in output out as
     x := in;
     b := 5;
     a := 0;
-    if a < 10 then
+    if a < 0 then
     (
         b := in;
     )
@@ -17,3 +17,9 @@ def main with input in output out as
         else s := s + 1;
     );
     out := p;
+    pp := 0;
+    ss := 1;
+    while pp < ss do (
+        pp := pp + 1;
+        pp := pp + 1;
+    );

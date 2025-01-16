@@ -54,7 +54,7 @@ let defined_variables_analysis (cfg : (label, statement list) Hashtbl.t * (label
       init_variables_set blocks nodes;
 
       (* build hash table of reversed direction of the edges *)
-      reverse_edges edges;
+      reverse_edges edges;    
       let l_dv_out block = 
         (*
           DV_OUT STUFF
@@ -70,8 +70,8 @@ let defined_variables_analysis (cfg : (label, statement list) Hashtbl.t * (label
           let res_set = find_or_empty_set out_regs x in
           let rec scan_preds set = function
             |[] -> set
-            |pred :: pred' -> scan_preds (StringSet.inter set (dv_out pred)) pred' in
-          Hashtbl.replace in_regs block ( scan_preds res_set pred');
+            |pred :: pred1' -> scan_preds (StringSet.inter set (dv_out pred)) pred1' in
+            Hashtbl.replace in_regs block ( scan_preds res_set pred');
         )
       in
       CFGDataFlowAnalysis.df_analysis blocks !initial_variables l_dv_in l_dv_out

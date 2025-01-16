@@ -127,7 +127,7 @@ let () =
     
     
     (* save produced code *)
-    write_to_file output_path (MiniLang.MiniRISC.hr_risc (MiniLang.MiniRISC.get_mini_risc (_nodes, _edges)));
+    write_to_file output_path (MiniLang.MiniRISC.hr_risc (MiniLang.MiniRISC.get_mini_risc (new_nodes, new_edges)));
     let input_v = print_endline "Write your input: "; read_line () in  
     print_endline ( Printf.sprintf "\nThe program output is: %d\n" (eval program (int_of_string input_v)));
 

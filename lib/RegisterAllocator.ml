@@ -29,7 +29,7 @@ let add_memory_ops instruction is_guard =
         |Some(addr) -> ([LoadI(addr, reg_b); Load(reg_b, reg_b)],reg_b) in
       (* r3 contains register destination for add *)
       let (r3_ins,r3) = match get_mem_addr_for_register r3 with
-        |None -> ([],r3)
+        |None -> ([],if is_guard then reg_b else r3)
         |Some(addr) -> ((if is_guard then [] else [LoadI(addr, reg_a); Store(reg_b,reg_a)]),reg_b) in
       r1_ins @ 
       r2_ins @ (
@@ -49,7 +49,7 @@ let add_memory_ops instruction is_guard =
         |Some(addr) -> ([LoadI(addr, reg_a); Load(reg_a, reg_a)],reg_a) in
       (* r3 contains register destination for add *)
       let (r3_ins,r3) = match get_mem_addr_for_register r3 with
-        |None -> ([],r3)
+        |None -> ([], if is_guard then reg_a else r3)
         |Some(addr) -> ((if is_guard then [] else [LoadI(addr, reg_b); Store(reg_a,reg_b)]),reg_a) in
       r1_ins @ 
       (
@@ -66,22 +66,22 @@ let add_memory_ops instruction is_guard =
       )
     | LoadI(v,r1) -> 
       (match get_mem_addr_for_register r1 with
-        |None -> [instruction]
+        |None -> [LoadI(v, if is_guard then reg_a else r1 )]
         |Some(addr) -> [LoadI(addr, reg_a); LoadI(v, reg_b); Store(reg_b, reg_a)])
-    (* Nop, Load, Store, Jump and CJump will fall in this case *)
+    (* Nop, Load, Store, Jump and CJump fall in this case *)
     | _ -> [instruction]
   ;;
 
-  
-let rec spill_block block = 
+
+let rec spill_block has_guard block = 
   match block with
   | [] -> []
   | instruction :: [] -> 
     (* the last instruction of each block must be a instruction that writes a temporary register to decide the correct branch *)
     (* Therefore no load and store are added in this case *)
-    (add_memory_ops instruction) true
+    (add_memory_ops instruction) has_guard
   | instruction :: block' -> 
-    (add_memory_ops instruction false) @ spill_block block'
+    (add_memory_ops instruction false) @ spill_block has_guard block'
 ;;
 let compute_frequencies nodes = 
   let frequencies = Hashtbl.create 256 in
@@ -109,6 +109,7 @@ let register_allocator target_number = function
   | (nodes, edges) ->
     (* keep two registers for temporary values, say Ra and Rb *)
     let actual_target = target_number - 2 in
+    if target_number < 4 then failwith "RegisterAllocator: impossible to compile the program with fewer than 4 registers";
     (* HEURISTIC: Always keep "in", "out" and then select the n - 4 most used registers *)
     (* For example, with 6 registers:  
       If I have in, r1,r2,r3,r4,r5,r6,r7,r8, out vritual registers
@@ -131,14 +132,13 @@ let register_allocator target_number = function
           populate_reg_to_mem frequencies' (iter + 1)
           )
     in
-    Printf.printf "Spilled to memory %d variables\n" (number_of_regs - actual_target);
-    if actual_target < 4 then failwith "RegisterAllocator: impossible to compile the program with fewer than 4 registers"
-    else if number_of_regs  <= actual_target then
+    Printf.printf "Spilled to memory %d variables\n" (if number_of_regs - actual_target > 0 then number_of_regs - actual_target else 0);
+    if number_of_regs  <= actual_target then
       (nodes, edges) (* nothing to be done, all values can reside in the registers *)
     else (
       let assignment = populate_reg_to_mem frequencies 0 in
-      (* if we fall there, we have to spill values to memory *)
-      Hashtbl.iter (fun node_id block -> Hashtbl.replace nodes node_id (spill_block block)) nodes; 
+      (* if we fall there, we have to spill values to memory *)                                         (* hasguard = true if a node has two out going edges *)
+      Hashtbl.iter (fun node_id block -> Hashtbl.replace nodes node_id (spill_block (List.length (try Hashtbl.find edges node_id with _ -> []) = 2) block)) nodes; 
 
       (* 
         Translate virtual registers to physical ones 
@@ -159,7 +159,7 @@ let register_allocator target_number = function
         |_ ->
           (* get next available physical register *)
           last_phys_assigned := !last_phys_assigned + 1;            
-          if !last_phys_assigned >= actual_target - 2 then failwith ("RegisterAllocator - mapping virtual to physical - Tried assigning reserved register, this must not happen" ^ (Printf.sprintf "thrown by virtual register %s: tried %d" virtual_reg !last_phys_assigned ))
+          if !last_phys_assigned >= actual_target - 2 then failwith ("RegisterAllocator - mapping virtual to physical - Tried assigning reserved register, this must not happen: " ^ (Printf.sprintf "thrown by virtual register %s: tried physical %s, probably you forgot to use out register for storing the result in your program" virtual_reg (List.nth physical_registers !last_phys_assigned) ))
           else
           let physical_register = List.nth physical_registers !last_phys_assigned in
           Hashtbl.add virt_to_phys virtual_reg physical_register;

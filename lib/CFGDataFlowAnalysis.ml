@@ -16,8 +16,20 @@ let print_set_as_list set =
   let elements = StringSet.elements set in
   String.concat "; " elements
 ;;
-
-
+let hashtbl_equal h1 h2 =
+  let hashtbl_to_sorted_list h =
+    Hashtbl.fold (fun k v acc -> (k, v) :: acc) h []
+    |> List.sort (fun (x,_) (y,_) -> compare x y ) in
+    let rec compare_equal h1 h2 =
+    match h1, h2 with
+    | [],[] -> true
+    | x::h1', y::h2' -> 
+      let c_equal = (fun (x,set1) (y,set2) -> x = y && StringSet.compare set1 set2 = 0  ) in
+      c_equal x y && compare_equal h1' h2'
+    | _ -> false (* if they have, for example, different length they are not equal*)
+  in
+  compare_equal (hashtbl_to_sorted_list h1) (hashtbl_to_sorted_list h2)
+;;
 let find_or_empty_set table key = 
   try Hashtbl.find table key with
   | _ -> StringSet.empty;;
@@ -54,11 +66,12 @@ let df_analysis (blocks: label list) initial_set l_dv_in l_dv_out =
           DV_OUT STUFF
         *)
         l_dv_out block;
+
         scan_blocks blocks';
         
       in
         let rec find_fix_point g_in g_out =
-          if g_in = in_regs && g_out = out_regs then
+          if hashtbl_equal g_in in_regs && hashtbl_equal g_out out_regs then
             (g_in,g_out)
           else 
             let g_in = Hashtbl.copy in_regs in

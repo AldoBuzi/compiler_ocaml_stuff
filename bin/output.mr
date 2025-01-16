@@ -1,40 +1,48 @@
-main:	copy in => r6
+main:	copy in => r8
 	loadi 5 => r1
-	loadi 10020 => r9
+	loadi 0 => r9
 	loadi 0 => r10
-	store r10 => r9
-	loadi 10 => r7
-	loadi 10020 => r9
-	load r9 => r9
-	less r9 r7 => r10
-	cjump r10 l2 l3
+	less r9 r10 => r17
+	cjump r17 l2 l3
 
 l2:	copy in => r1
 	jump l4
 
-l3:	copy r1 => r9
+l3:	copy r1 => r16
+	loadi 10004 => r17
+	store r16 => r17
 	jump l4
 
 l4:	loadi 0 => r2
-	addi r6 5 => r3
-	loadi 10 => r8
-	less r2 r8 => r10
-	cjump r10 l5 l9
+	addi r8 5 => r3
+	loadi 10 => r11
+	less r2 r11 => r17
+	cjump r17 l5 l9
 
 l5:	addi r2 1 => r2
-	multi r2 2 => r4
-	loadi 7 => r5
-	less r4 r5 => r10
-	cjump r10 l6 l7
+	multi r2 2 => r6
+	loadi 7 => r7
+	less r6 r7 => r17
+	cjump r17 l6 l7
 
 l6:	loadi 100 => r2
 	jump l8
 
-l7:	addi r1 1 => r1
+l7:	addi r6 1 => r6
 	jump l8
 
 l8:	Nop
 	jump l4
 
 l9:	copy r3 => out
+	loadi 0 => r4
+	loadi 1 => r5
+	less r4 r5 => r17
+	cjump r17 l10 l11
+
+l10:	addi r4 1 => r4
+	addi r4 1 => r4
+	jump l9
+
+l11:	Nop
 
