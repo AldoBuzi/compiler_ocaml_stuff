@@ -28,6 +28,7 @@ rule read = parse
 | "-" {MINUS}
 | "+" {PLUS}
 | "*" {TIMES}
+| "not" {NOT}
 | "(" {L_PAR}
 | ")" {R_PAR}
 | "skip" {SKIP}

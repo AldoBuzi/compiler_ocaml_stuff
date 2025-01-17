@@ -23,9 +23,9 @@ Options:
   -uc                Enable undefined variable checking to ensure correctness.
 
 Examples:
-  MiniImpCompiler 8 source.mimp output.txt
-  MiniImpCompiler 4 source.mimp output_optimized.txt -- -d -op
-  MiniImpCompiler 5 input.mimp translated.txt -- -uc
+  MiniImpCompiler 8 source output.txt
+  MiniImpCompiler 4 source output_optimized.txt -- -d -op
+  MiniImpCompiler 5 input translated.txt -- -uc
 
 Notes:
   - The <num_registers> argument must be a positive integer.
@@ -99,6 +99,8 @@ let () =
         let msg =  "Undefined variables detected: [" ^ (List.fold_left (fun acc x  -> acc ^ x ^ ", " ) "" undefined_list ) ^ "]" in
         failwith msg);)
     else ();
+
+
     (* Build MINIRisc CFG *)
     let (_nodes,_edges) = MiniLang.MiniRISCControlFlowGraph.mini_risc_cfg (nodes,edges) in
     if debug_flag then (

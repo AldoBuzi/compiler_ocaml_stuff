@@ -114,6 +114,9 @@ let live_range_optimization live_set = function
       match regs with
       | [] -> None
       | x :: list' -> 
+        (* do not merge if x is in or out *)
+        if x = "in" || x = "out" then check reg list'
+        else
         let reg_set = try Some(Hashtbl.find live_ranges reg) with _ -> None in
         let x_set = try Some(Hashtbl.find live_ranges x) with _ -> None in
         (* if a register is not available, it means that it has already been merged in the current phase *)

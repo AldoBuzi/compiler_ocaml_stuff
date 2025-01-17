@@ -35,7 +35,7 @@ let get_mini_risc cfg =
   | (nodes,edges) -> 
     let get_jump_from_risc instruction l1 l2 = 
       match instruction  with
-      | Less(_,_,r3) | And(_,_,r3) -> CJump(r3, l1, l2)
+      | Less(_,_,r3) | And(_,_,r3) | AndI(_,_,r3) -> CJump(r3, l1, l2)
       | Not(_,r2) -> CJump(r2, l1, l2)
       | _ -> failwith ("get_jump_from_risc: this case should have not happened")  in 
     let add_jump_to_node node_id = (match Hashtbl.find edges node_id with

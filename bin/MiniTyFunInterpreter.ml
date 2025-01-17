@@ -38,16 +38,18 @@ let type_check env program =
     match program with
     | Int -> TInt
     | Bool -> TBool
-    | Variable(v) -> (env v)
-    (* Da rivedere *)
+    | Variable(v) -> env v
     | Fun(arg, arg_type, body) -> (match arg_type with
-      |Arrow(_,_) -> failwith "Type of Fun can not be a function"
-      |_ -> Arrow(arg_type,checker (bind env arg arg_type) body)
+      |Arrow(arg_type,return_type) -> 
+        let body_type = checker (bind env arg arg_type) body in
+        if return_type = body_type then Arrow(arg_type, return_type)
+        else failwith "type of body does not match with return type declared"
+      |_ -> failwith "you declared a fun with a type that is not Arrow"
       )
     | Apply(term1, term2) -> (match (checker env term1) with
       |Arrow(arg_type, return_type) -> (match ((checker env term2) = arg_type) with
         | true -> return_type
-        | false -> failwith "Argument type does not match application type"
+        | false -> failwith "Apply: argument type does not match function argument type"
       )
       | _ -> failwith "Type is not Arrow"
       )
@@ -74,11 +76,11 @@ let type_check env program =
     | Not(term) -> if checker env term = TBool then TBool else failwith "Not operator can not be applied to term that is not a boolean"
     | IfThenElse(condition, if_true, if_false) -> if (checker env condition) = TBool 
       then (let body_type = checker env if_true in
-        match (body_type == (checker env if_false)) with 
+        match (body_type = (checker env if_false)) with 
           |true -> body_type
-          |false -> failwith "Branches of if do not have the same type"
+          |false -> failwith "'IF' branches do not have the same type"
           ) 
-      else failwith "If condition isn' a bool condition"
+      else failwith "If condition isn't a bool condition"
     | LetIn(var,body, t2) -> checker (bind env var (checker env body)) t2
     | LetFunIn(fname, arg,ftype, body, t2) -> (match ftype with
       | Arrow(in_type,out_type) -> (

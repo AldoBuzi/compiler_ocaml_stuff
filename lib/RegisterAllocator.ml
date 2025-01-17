@@ -20,6 +20,8 @@ let (reg_a, reg_b) = ("R_a", "R_b");;
 
 let add_memory_ops instruction is_guard = 
   match instruction with
+    (* Note that the is_guard will only occur for And, Less, Not and AndI *)
+    (* But this does not give any problem with other instructions, so I keep them together *)
     | Add(r1,r2,r3) |Sub(r1,r2,r3)| Mult(r1,r2,r3) | And(r1,r2,r3) | Less(r1,r2,r3) -> 
       let (r1_ins,r1) = match get_mem_addr_for_register r1 with
         |None -> ([],r1)
@@ -28,9 +30,9 @@ let add_memory_ops instruction is_guard =
         |None -> ([],r2)
         |Some(addr) -> ([LoadI(addr, reg_b); Load(reg_b, reg_b)],reg_b) in
       (* r3 contains register destination for add *)
-      let (r3_ins,r3) = match get_mem_addr_for_register r3 with
+      let (r3_ins,r3) = match if is_guard then None else get_mem_addr_for_register r3 with
         |None -> ([],if is_guard then reg_b else r3)
-        |Some(addr) -> ((if is_guard then [] else [LoadI(addr, reg_a); Store(reg_b,reg_a)]),reg_b) in
+        |Some(addr) -> ([LoadI(addr, reg_a); Store(reg_b,reg_a)],reg_b) in
       r1_ins @ 
       r2_ins @ (
         (match instruction with
@@ -48,9 +50,9 @@ let add_memory_ops instruction is_guard =
         |None -> ([],r1)
         |Some(addr) -> ([LoadI(addr, reg_a); Load(reg_a, reg_a)],reg_a) in
       (* r3 contains register destination for add *)
-      let (r3_ins,r3) = match get_mem_addr_for_register r3 with
+      let (r3_ins,r3) = match if is_guard then None else get_mem_addr_for_register r3 with
         |None -> ([], if is_guard then reg_a else r3)
-        |Some(addr) -> ((if is_guard then [] else [LoadI(addr, reg_b); Store(reg_a,reg_b)]),reg_a) in
+        |Some(addr) -> ([LoadI(addr, reg_b); Store(reg_a,reg_b)],reg_a) in
       r1_ins @ 
       (
         (match instruction with
@@ -65,7 +67,8 @@ let add_memory_ops instruction is_guard =
       r3_ins
       )
     | LoadI(v,r1) -> 
-      (match get_mem_addr_for_register r1 with
+      (* check there is actually not required because is_guard will never be true there. I added it for "future expansions" *)
+      (match if is_guard then None else get_mem_addr_for_register r1 with
         |None -> [LoadI(v, if is_guard then reg_a else r1 )]
         |Some(addr) -> [LoadI(addr, reg_a); LoadI(v, reg_b); Store(reg_b, reg_a)])
     (* Nop, Load, Store, Jump and CJump fall in this case *)
@@ -83,10 +86,24 @@ let rec spill_block has_guard block =
   | instruction :: block' -> 
     (add_memory_ops instruction false) @ spill_block has_guard block'
 ;;
-let compute_frequencies nodes = 
+let compute_frequencies (nodes,edges) = 
   let frequencies = Hashtbl.create 256 in
-  let rec compute_block = function
+  let rec compute_block node_id = function
     |[] -> ()
+    |ins::[] -> 
+      (* by construction the last instruction uses a dummy register to decide where to jump (CJUMP) *)
+      let is_guard = List.length (try Hashtbl.find edges node_id with _ -> []) = 2 in
+      let new_ins =  (match ins with
+        (* Actually we can remove everything but Less, And, Andi, Not. I let just in case of ""future extensions"" *)
+        | Add(r1,r2,r3) | Sub(r1,r2,r3)| Mult(r1,r2,r3) | And(r1,r2,r3) | Less(r1,r2,r3)  -> if is_guard then [r1;r2] else [r1;r2;r3]
+        | AddI(r1,_,r3) | SubI(r1,_,r3) | MultI(r1,_,r3) | AndI(r1,_,r3) | Not(r1,r3) | Copy(r1,r3) -> if is_guard then [r1] else [r1;r3]
+        | LoadI(_,r3) -> if is_guard then [] else [r3]
+        (* Nop, Load, Store, Jump and CJump will fall in this case *)
+        | _ -> []
+      )
+      in
+      (* update frequencies of registers *)
+      List.iter (function x -> Hashtbl.replace frequencies x ((try Hashtbl.find frequencies x with _ -> 0) +1) ) new_ins;
     |ins :: block' -> 
       let new_ins =  (match ins with
           | Add(r1,r2,r3) | Sub(r1,r2,r3)| Mult(r1,r2,r3) | And(r1,r2,r3) | Less(r1,r2,r3)  -> [r1;r2;r3]
@@ -98,9 +115,9 @@ let compute_frequencies nodes =
      in
       (* update frequencies of registers *)
       List.iter (function x -> Hashtbl.replace frequencies x ((try Hashtbl.find frequencies x with _ -> 0) +1) ) new_ins;
-      compute_block block'
+      compute_block node_id block'
   in
-  Hashtbl.iter (fun _ block -> compute_block block ) nodes;
+  Hashtbl.iter (fun node_id block -> compute_block node_id block ) nodes;
   (* sort by ascending number of occurences*)
   List.sort (fun (_,occ) (_,occ2) ->  compare occ occ2 ) (Hashtbl.fold (fun key value acc -> (key, value) :: acc) frequencies [])
 ;;
@@ -118,7 +135,7 @@ let register_allocator target_number = function
       Note: I keep as spelling registers always the last two phyisical registers
       Note: The mapping from virtual registers to physical ones is done at the bottom of this file
      *)
-    let frequencies = compute_frequencies nodes in
+    let frequencies = compute_frequencies (nodes,edges) in
     let number_of_regs = List.length frequencies in
     let rec populate_reg_to_mem frequencies iter =
       match frequencies with

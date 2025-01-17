@@ -9,6 +9,7 @@ def main with input in output out as
     else z := b;
     c := 0;
     p := x + 5;
+    out := p;
     while c < 10 do (
         c := c + 1;
         s := c * 2; 
@@ -16,10 +17,5 @@ def main with input in output out as
             c := 100;
         else s := s + 1;
     );
-    out := p;
+    s := out;
     pp := 0;
-    ss := 1;
-    while pp < ss do (
-        pp := pp + 1;
-        pp := pp + 1;
-    );
